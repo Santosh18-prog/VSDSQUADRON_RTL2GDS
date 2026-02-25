@@ -465,6 +465,9 @@ The above timing report shows the synthesis stage timing analysis results.
   This confirms that there are no hold violations.
   
 </details>
+
+---
+
 </details>
 
 
@@ -1100,6 +1103,8 @@ magic -T ~/.ciel/sky130A/libs.tech/magic/sky130A.tech lef read tmp/merged.nom.le
 
     ![label](phase2/label.png)
 </details>
+
+  ---
   
 </details>
 
