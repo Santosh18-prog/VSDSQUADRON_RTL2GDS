@@ -355,9 +355,6 @@ This ensures safe fabrication.
 
 After routing:
 
-RC extraction is performed using:
-
-- Def2Spef
 
 Timing analysis is performed using:
 
@@ -395,7 +392,7 @@ The task is to find the flip-flop ratio ratio for the design picorv32a. This is 
 
    % ./flow.tcl -interactive  -  Starts the OpenLane flow in interactive mode to execute the RTL to GDSII flow step-by-step
 
-   % package require openlane 0.9  -  Loads the OpenLane v0.9 package and its required dependencies
+   % package require openlane 1.0.2  -  Loads the OpenLane v1.0.2 package and its required dependencies
 
 2. prep -design picorv32a
 
@@ -1409,38 +1406,9 @@ This contributes to the setup timing violation.
 
    
  </details>
+
+ ---
+ 
 </details>
-## 🛠 Tools Used
 
-| Stage | Tool |
-|-------|------|
-| Synthesis | Yosys |
-| Floorplan & Placement | OpenROAD |
-| Routing | OpenROAD |
-| DRC | Magic |
-| LVS | Netgen |
-| STA | OpenSTA |
-| Flow Automation | OpenLANE |
-| PDK | Sky130 |
 
----
-
-## 📂 Repository Structure
-
-```
-.
-├── images/
-└── README.md
-```
-
----
-
-## 🎯 Learning Outcomes
-
-- Complete ASIC Backend Flow understanding  
-- Timing closure concepts  
-- Power planning basics  
-- DRC & LVS debugging  
-- Antenna rule fixing techniques  
-
----
