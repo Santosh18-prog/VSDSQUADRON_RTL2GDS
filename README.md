@@ -1104,7 +1104,7 @@ magic -T ~/.ciel/sky130A/libs.tech/magic/sky130A.tech lef read tmp/merged.nom.le
     ![label](phase2/label.png)
 </details>
 
-### why macros like RAM behave differently than standard cells
+### why macros like RAM behave differently than standard cells?
 
 - Because they are large pre-designed memory blocks treated as black boxes, while standard cells are small logic gates.
 
