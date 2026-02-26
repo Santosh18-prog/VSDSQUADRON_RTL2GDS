@@ -1409,7 +1409,53 @@ High fanout causes:
 This contributes to the setup timing violation.
 
 ---
+### 🛠 Optimization Commands Used
 
+Upsized selected buffers using:
+
+```tcl
+replace_cell _16820_ sky130_fd_sc_hd__buf_4
+replace_cell _17121_ sky130_fd_sc_hd__buf_8
+```
+
+Re-ran STA:
+
+```tcl
+report_checks -fields {net cap slew input_pins} -digits 4
+```
+
+---
+
+![red](phase3/red.png)
+![red](phase3/red-1.png)
+![re](phase3/re.png)
+![red](phase3/re-1.png)
+
+### 📊 Results After Optimization
+
+- Data Arrival Time: 22.2434 ns
+- Data Required Time: 11.7053 ns
+- Slack: **-10.3448 ns (VIOLATED)**
+
+### 📈 Improvement
+
+Slack improved from:
+
+```
+-10.75 ns → -10.3448 ns
+```
+
+Improvement ≈ **0.405 ns**
+
+### 🧠 Technical Reason for Improvement
+
+Upsizing buffer:
+
+- Increases drive strength
+- Reduces output resistance (R)
+- Improves slew
+- Reduces RC delay on high-fanout nets
+- 
 ##  Conclusion
 
 - Setup timing is violated at synthesis level.
