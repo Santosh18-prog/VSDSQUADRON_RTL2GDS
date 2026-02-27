@@ -1476,7 +1476,7 @@ Upsizing buffer:
 - Reduces output resistance (R)
 - Improves slew
 - Reduces RC delay on high-fanout nets
-- 
+
 ##  Conclusion
 
 - Setup timing is violated at synthesis level.
