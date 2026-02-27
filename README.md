@@ -1431,21 +1431,42 @@ report_checks -fields {net cap slew input_pins} -digits 4
 ![re](phase3/re.png)
 ![red](phase3/re-1.png)
 
+Again optimizing using these commands:
+
+
+```tcl
+replace_cell _17506_ sky130_fd_sc_hd__or4bb_4   
+replace_cell _22014_ sky130_fd_sc_hd__or4_4
+```
+
+Re-ran STA:
+
+```tcl
+report_checks -fields {net cap slew input_pins} -digits 4
+```
+
+---
+
+![and](phase3/and.png)
+![and1](phase3/and2.png)
+![or](phase3/or.png)
+![or2](phase3/or2.png)
+
 ### 📊 Results After Optimization
 
-- Data Arrival Time: 22.2434 ns
+- Data Arrival Time:  -21.4136 ns
 - Data Required Time: 11.7053 ns
-- Slack: **-10.3448 ns (VIOLATED)**
+- Slack: **-9.7083 ns (VIOLATED)**
 
 ### 📈 Improvement
 
 Slack improved from:
 
 ```
--10.75 ns → -10.3448 ns
+-10.75 ns → -9.7083 ns
 ```
 
-Improvement ≈ **0.405 ns**
+Improvement ≈ **1.0417 ns**
 
 ### 🧠 Technical Reason for Improvement
 
