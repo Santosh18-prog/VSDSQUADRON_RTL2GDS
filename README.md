@@ -1507,6 +1507,7 @@ Upsizing buffer:
 In the design, a single clock source (CLK1) must drive multiple flip-flops.
 
 ![problem](phase4/prob.png)
+![problem](phase4/prob1.png)
 
 If clock is directly connected:
 
