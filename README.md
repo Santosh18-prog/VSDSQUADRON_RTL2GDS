@@ -1498,11 +1498,15 @@ Upsizing buffer:
   <details>
    <summary>4.1. Theory</summary>
 
+   ---
+
 ## 1. Clock Tree Synthesis (CTS)
 
 ### Problem Before CTS
 
 In the design, a single clock source (CLK1) must drive multiple flip-flops.
+
+![problem](phase4/prob.png)
 
 If clock is directly connected:
 
@@ -1534,6 +1538,8 @@ A badly constructed clock tree:
 ---
 
 ## 2. H-Tree Concept
+
+![H-tree](phase4/Htree.png)
 
 H-Tree structure connects the clock to the midpoint of flip-flops.
 
@@ -1591,6 +1597,8 @@ This affects:
 
 Best solution: Add buffers.
 
+![Buffers](phase4/Buff.png)
+
 Repeaters:
 
 - Restore signal strength  
@@ -1624,6 +1632,8 @@ If not shielded:
 - Glitch  
 - Delta Delay  
 
+![glitch](phase4/Glitch.png)
+![Delta](phase4/Delta.png)
 If aggressor net switches:
 
 - Victim net sees bump  
@@ -1635,6 +1645,8 @@ If aggressor net switches:
 ### Shielding Technique
 
 Shield wire is placed between aggressive nets.
+
+![Shield](phase4/shield.png)
 
 Shield connected to:
 
@@ -1678,6 +1690,8 @@ Capture flop captures data.
 
 ### Setup Condition
 
+![setup](phase4/setup.png)
+
 Data Arrival Time < Data Required Time  
 
 If:
@@ -1714,6 +1728,8 @@ In Hold analysis:
 
 ### Hold Condition
 
+![hold](phase4/hold.png)
+
 Data Arrival Time > Hold Time  
 
 If violated:
@@ -1730,10 +1746,8 @@ Clock delay consists of:
 - Buffer delay  
 - Multiple stages  
 
-Example:
-
-Δ1 = Wire RC delay + Buffer delay  
-Δ2 = Wire RC delay + Buffer delay  
+  ![delta1](phase4/delta1.png)
+  ![delta2](phase4/delta2.png)
 
 Skew:
 
