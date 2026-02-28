@@ -1491,4 +1491,283 @@ Upsizing buffer:
  
 </details>
 
+<details>
+  <summary><strong>Phase 4 — CTS and Timing with Real Clocks</strong></summary>
+
+  ---
+  <details>
+   <summary>4.1. Theory</summary>
+
+## 1. Clock Tree Synthesis (CTS)
+
+### Problem Before CTS
+
+In the design, a single clock source (CLK1) must drive multiple flip-flops.
+
+If clock is directly connected:
+
+- Time to reach FF1 = T1  
+- Time to reach FF2 = T2  
+
+If:
+
+T2 ≠ T1  
+
+Then:
+
+Skew = T2 − T1  
+
+This creates clock skew.
+
+If skew is large → design becomes unreliable.
+
+---
+
+### Why Bad Clock Tree is Problematic?
+
+A badly constructed clock tree:
+
+- Causes different clock arrival times  
+- Creates setup/hold violations  
+- Increases timing uncertainty  
+
+---
+
+## 2. H-Tree Concept
+
+H-Tree structure connects the clock to the midpoint of flip-flops.
+
+### Key Idea
+
+- Clock is routed symmetrically  
+- Equal distance from clock source to all flip-flops  
+- Ensures nearly equal arrival time  
+
+Therefore:
+
+Skew ≈ 0  
+
+---
+
+## 3. Clock Tree Buffering
+
+Clock nets are physical wires.
+
+Wires have:
+
+- Resistance (R)  
+- Capacitance (C)  
+
+Due to RC:
+
+- Signal integrity reduces  
+- Edge becomes slow  
+- Slew increases  
+
+RC effect distorts waveform before reaching flip-flop.
+
+---
+
+### RC Network Effect
+
+Clock signal passes through:
+
+R → C → Load  
+
+Waveform becomes:
+
+- Slow rising edge  
+- Reduced slope  
+- Increased delay  
+
+This affects:
+
+- Setup timing  
+- Hold timing  
+
+---
+
+## 4. Solution: Repeaters (Buffers)
+
+Best solution: Add buffers.
+
+Repeaters:
+
+- Restore signal strength  
+- Improve rise/fall time  
+- Reduce RC delay impact  
+
+Each buffer re-generates clean clock signal.
+
+Thus:
+
+- Signal reaches flip-flops properly  
+- Slew improves  
+- Delay optimized  
+
+---
+
+## 5. Clock Net Shielding
+
+Clock nets are critical nets.
+
+If not shielded:
+
+- Crosstalk occurs  
+- Coupling capacitance increases  
+- Noise/glitches may appear  
+
+---
+
+### Problems Due to Crosstalk
+
+- Glitch  
+- Delta Delay  
+
+If aggressor net switches:
+
+- Victim net sees bump  
+- May create timing violation  
+- Can flip memory content  
+
+---
+
+### Shielding Technique
+
+Shield wire is placed between aggressive nets.
+
+Shield connected to:
+
+- VDD  
+- GND  
+
+This reduces coupling capacitance and prevents glitch.
+
+⚠ Important:
+
+We do NOT shield all nets.
+
+We only shield:
+
+- Critical nets  
+- Long nets  
+- Clock nets  
+
+Because shielding increases:
+
+- Routing congestion  
+- Area  
+- Cost  
+
+---
+
+## 6. Timing Analysis (With Real Clocks)
+
+### Setup Analysis – Single Clock
+
+Launch flop sends data.  
+Capture flop captures data.
+
+### Definitions
+
+- Data Arrival Time  
+- Data Required Time  
+- Clock Network Delay  
+
+---
+
+### Setup Condition
+
+Data Arrival Time < Data Required Time  
+
+If:
+
+Data Arrival Time > Data Required Time  
+
+→ Setup violation
+
+---
+
+### Clock Skew Impact on Setup
+
+Let:
+
+Δ1 = clock delay to launch flop  
+Δ2 = clock delay to capture flop  
+
+Skew = Δ1 − Δ2  
+
+Setup slack:
+
+Slack = Data Required − Data Arrival  
+
+---
+
+## 7. Hold Timing Analysis
+
+In Hold analysis:
+
+- Same clock edge used  
+- Check if new data corrupts old data  
+
+---
+
+### Hold Condition
+
+Data Arrival Time > Hold Time  
+
+If violated:
+
+→ Hold violation  
+
+---
+
+## 8. Real Clock Model (Post Routing)
+
+Clock delay consists of:
+
+- Wire RC delay  
+- Buffer delay  
+- Multiple stages  
+
+Example:
+
+Δ1 = Wire RC delay + Buffer delay  
+Δ2 = Wire RC delay + Buffer delay  
+
+Skew:
+
+Skew = Δ1 − Δ2  
+
+---
+
+## Final Timing Equations
+
+### Setup Timing
+
+(θ + Δ1) < (T + Δ2) − SU  
+
+Where:
+
+- T = clock period  
+- SU = setup uncertainty  
+
+---
+
+### Hold Timing
+
+(θ + Δ1) > (Δ2 + HU)  
+
+Where:
+
+- HU = hold uncertainty  
+  </details>
+
+---
+
+<details>
+  <summary>4.2. LAB</summary>
+</details>
+</details>
+
 
