@@ -2152,7 +2152,6 @@ connections - Pin-to-pin geometry generation
 -   Understood grid-based routing model
 -   Learned how nets are geometrically connected
 
-------------------------------------------------------------------------
 </details>
 
 ---
@@ -2343,6 +2342,5 @@ This lab provided hands-on experience with:
   
 </details>
 
----
 
 </details>
