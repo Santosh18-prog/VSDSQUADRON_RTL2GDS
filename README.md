@@ -1117,7 +1117,7 @@ magic -T ~/.ciel/sky130A/libs.tech/magic/sky130A.tech lef read tmp/merged.nom.le
 </details>
 
 <details>
-<summary><strong>Phase 3 - Timing Literacy with Ideal Clocks</strong></summary>
+<summary><strong>Phase 3 — Timing Literacy with Ideal Clocks</strong></summary>
   
 ---
 
