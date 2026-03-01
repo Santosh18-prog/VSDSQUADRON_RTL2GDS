@@ -1782,6 +1782,198 @@ Where:
 
 <details>
   <summary>4.2. LAB</summary>
+
+## CTS, STA and Timing Optimization -- picorv32a
+
+------------------------------------------------------------------------
+
+## Full OpenLane Flow Used
+
+    run_synthesis
+    run_floorplan
+    run_placement
+    run_cts
+    run_routing
+
+------------------------------------------------------------------------
+
+## Reading LEF and DEF in OpenROAD
+
+Launch OpenROAD:
+
+    openroad
+
+Read merged LEF file:
+
+    read_lef /openlane/designs/picorv32a/runs/RUN_2026.02.25_01.29.26/tmp/merged.nom.lef
+
+Read CTS DEF file:
+
+    read_def /openlane/designs/picorv32a/runs/RUN_2026.02.25_01.29.26/results/cts/picorv32a.def
+
+### Observations After Loading DEF
+
+-   14 Technology Layers created
+-   25 Technology Vias created
+-   441 Library Cells loaded
+-   32014 Components
+-   21614 Nets
+-   411 Pins
+
+Save database:
+
+    write_db pico_cts1.db
+
+------------------------------------------------------------------------
+
+## Loading Design for Timing Analysis
+
+Reload database:
+
+    read_db pico_cts.db
+
+Read Verilog netlist:
+
+    read_verilog /openlane/designs/picorv32a/runs/RUN_2026.02.25_01.29.26/results/synthesis/picorv32a.v
+
+Read Liberty file:
+
+    read_liberty $::env(LIB_SYNTH_COMPLETE)
+
+Link design:
+
+    link_design picorv32a
+
+Read SDC constraints:
+
+    read_sdc /openlane/designs/picorv32a/src/picorv32a.sdc
+
+Set propagated clock:
+
+    set_propagated_clock [all_clocks]
+
+Generate timing report:
+
+    report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
+
+------------------------------------------------------------------------
+
+![run](phase4/run.png)
+![place](phase4/place.png)
+![openroad](phase4/openroad.png)
+![openroad](phase4/p-1.png)
+![openroad](phase4/p-2.png)
+![openroad](phase4/p-3.png)
+![openroad](phase4/p-4.png)
+![openroad](phase4/p-5.png)
+
+## Hold Timing Analysis
+
+Path Type: MIN
+Startpoint: irq[4]
+Endpoint: Flip-flop D input
+
+Data Required Time = 3.3461 ns
+Data Arrival Time = 2.6119 ns
+
+Slack Calculation:
+
+Slack = Required Time - Arrival Time
+Slack = 3.3461 - 2.6119
+Slack = -0.7342 ns
+
+Result: Hold Violation
+
+Conclusion: Data is arriving too early at the capture flip-flop.
+
+------------------------------------------------------------------------
+
+## Setup Timing Analysis
+
+Path Type: MAX
+Startpoint: Flip-flop
+Endpoint: mem_la_wdata[16]
+
+Data Required Time = 9.6000 ns
+Data Arrival Time = 5.6667 ns
+
+Slack = 9.6000 - 5.6667
+Slack = +3.9333 ns
+
+Result: Setup Timing MET
+
+------------------------------------------------------------------------
+
+## Clock Skew Analysis
+
+Commands used:
+
+    report_clock_skew -hold
+    report_clock_skew -setup
+
+Observed:
+
+-   Clock Latency ≈ 2.99 ns
+-   Skew = 0.00 ns
+
+Clock tree is balanced.
+
+------------------------------------------------------------------------
+
+## Optimization Strategy Applied
+
+    set ::env(SYNTH_STRATEGY) "DELAY 3"
+    set ::env(SYNTH_SIZING) 1
+
+Re-run flow:
+
+    run_synthesis
+    run_floorplan
+    run_placement
+    run_cts
+
+------------------------------------------------------------------------
+
+## Floorplan Comparison
+
+Before Optimization:
+
+Width = 837.2
+Height = 835.04
+
+After Optimization:
+
+Width = 731.86
+Height = 731.68
+
+Observation:
+
+-   Reduced core area
+-   Improved placement compactness
+-   Better optimization impact
+
+------------------------------------------------------------------------
+
+# Final Result Summary
+
+Setup : MET
+Hold : VIOLATED (Initial CTS Run)
+Clock Skew : Balanced
+
+------------------------------------------------------------------------
+
+# Conclusion
+
+This lab provided hands-on understanding of:
+
+-   Post-CTS timing analysis
+-   Slack calculation
+-   Setup and Hold violations
+-   Clock skew behavior
+-   Synthesis optimization strategies
+-   Impact of optimization on area and timing
+
+------------------------------------------------------------------------
 </details>
 </details>
 
