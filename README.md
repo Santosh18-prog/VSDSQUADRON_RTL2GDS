@@ -2342,5 +2342,6 @@ This lab provided hands-on experience with:
   
 </details>
 
+---
 
 </details>
