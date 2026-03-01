@@ -1783,6 +1783,8 @@ Where:
 <details>
   <summary>4.2. LAB</summary>
 
+  ---
+
 ## CTS, STA and Timing Optimization -- picorv32a
 
 ------------------------------------------------------------------------
@@ -1975,6 +1977,372 @@ This lab provided hands-on understanding of:
 
 ------------------------------------------------------------------------
 </details>
+
+---
+
 </details>
 
+<details>
+  <summary><strong>Phase 5 — PDN Awareness  </strong></summary>
 
+  ---
+<details>
+  <summary>5.1. Theory</summary>
+
+  ---
+
+ ## Introduction
+
+Routing is one of the most important stages in Physical Design. Its
+objective is to connect all pins belonging to the same net while
+satisfying Design Rule Constraints (DRC).
+
+![route](phase5/route.png)
+
+In industry, routing is typically divided into two main stages:
+
+1.  Global Routing (Fast Route)
+2.  Detailed Routing (Detail Route)
+
+------------------------------------------------------------------------
+
+## Routing Flow Overview
+
+Routing ├── Global Route (FastRoute) └── Detailed Route (TritonRoute)
+
+Global Route is done using FastRoute. Detailed Route is done using
+TritonRoute.
+
+------------------------------------------------------------------------
+
+## Global Routing (Fast Route)
+
+Global routing is a high-level routing stage.
+
+It does not create exact metal geometries. Instead, it generates routing
+guides.
+
+### Key Features
+
+-   Divides routing region into rectangular grid cells.
+-   Abstracted as a coarse 3D routing grid.
+-   Determines approximate routing paths.
+-   Generates route guides for each net.
+-   Estimates congestion between global cells.
+
+The colored rectangular boxes observed after fast route represent
+routing guides generated for each net.
+
+These boxes define where the detailed router is allowed to route.
+
+------------------------------------------------------------------------
+
+## Understanding Routing Guides
+
+After FastRoute:
+
+-   Each net gets a routing guide.
+-   Guides indicate which layers and regions can be used.
+-   No actual metal wires are drawn yet.
+-   Only approximate connectivity is determined.
+
+Global routing ensures inter-guide connectivity but does not ensure
+final pin-to-pin geometry connection.
+
+------------------------------------------------------------------------
+
+## Detailed Routing (TritonRoute)
+
+Detailed routing is the stage where exact metal geometries are created.
+
+TritonRoute:
+
+-   Takes routing guides as input.
+-   Performs initial detailed routing.
+-   Connects all pins geometrically.
+-   Ensures DRC compliance.
+-   Uses panel-based routing scheme.
+-   Supports multi-layer routing.
+-   Performs intra-layer parallel routing.
+-   Performs inter-layer sequential routing.
+
+------------------------------------------------------------------------
+
+## What Detailed Route Does
+
+In detailed route:
+
+-   Actual wires are drawn.
+-   Vias are inserted between layers.
+-   Spacing, width and design rules are satisfied.
+-   Final physical connectivity is created.
+
+Before detailed routing, pins are not physically connected. After
+detailed routing, exact geometrical connections are established.
+
+------------------------------------------------------------------------
+
+## Example Concept
+
+Consider 4 pins: A, B, C, D All belong to the same net.
+
+Global Route:
+
+-   Creates routing guides covering these pins.
+
+Detailed Route:
+
+-   Connects A, B, C, D with actual metal segments.
+-   Finds optimal path.
+-   Ensures DRC clean routing.
+
+------------------------------------------------------------------------
+
+## Routing Grid Representation
+
+Global routing uses:
+
+-   Rectangular global cells
+-   Global edges between cells
+-   Abstract 3D routing grid model
+
+It estimates how many tracks are available between adjacent global
+cells.
+
+------------------------------------------------------------------------
+
+## TritonRoute Characteristics
+
+-   Grid-based detailed router
+-   Uses MILP-based optimization strategies
+-   Handles DRC violations iteratively
+-   Performs rip-up and re-route if required
+-   Focuses on clean final layout generation
+
+------------------------------------------------------------------------
+
+## Commands Used in OpenLane
+
+To run routing:
+
+    run_routing
+
+This automatically performs:
+
+1.  Global Routing (FastRoute)
+2.  Detailed Routing (TritonRoute)
+
+------------------------------------------------------------------------
+
+## Summary
+
+Global Routing (FastRoute): - Coarse routing - Generates routing
+guides - Abstract connectivity
+
+Detailed Routing (TritonRoute): - Final metal routing - DRC-compliant
+connections - Pin-to-pin geometry generation
+
+------------------------------------------------------------------------
+
+## Key Learning
+
+-   Understood difference between Global and Detailed routing
+-   Learned how routing guides are generated
+-   Studied TritonRoute working mechanism
+-   Understood grid-based routing model
+-   Learned how nets are geometrically connected
+
+------------------------------------------------------------------------
+</details>
+
+---
+
+<details><summary>5.2. LAB</summary>
+  
+  ---
+  
+
+## Design Preparation
+
+Command used:
+
+    prep -design picorv32a -tag FRESH_RUN
+
+Observations:
+
+-   Configuration loaded from designs/picorv32a/config.tcl
+-   PDK: sky130A
+-   Standard Cell Library: sky130_fd_sc_hd
+-   Run directory created at: /openlane/designs/picorv32a/runs/FRESH_RUN
+
+------------------------------------------------------------------------
+
+# Synthesis
+
+Command:
+
+    run_synthesis
+
+Stages:
+
+-   Logic synthesis
+-   Optimization
+-   Single-corner STA
+
+------------------------------------------------------------------------
+
+# Floorplanning
+
+Command:
+
+    run_floorplan
+
+Operations performed:
+
+-   Core area calculation
+-   IO placement
+-   Tap & Decap insertion
+-   Power planning
+-   PDN generation
+
+Floorplan dimensions:
+
+Width = 731.86
+Height = 731.68
+
+------------------------------------------------------------------------
+
+# Placement
+
+Command:
+
+    run_placement
+
+Steps observed:
+
+1.  Global Placement
+2.  STA after placement
+3.  Resizer Design Optimization
+4.  Detailed Placement
+5.  Post-placement STA
+
+Global placement arranges cells optimally. Detailed placement legalizes
+the cell positions.
+
+------------------------------------------------------------------------
+
+# Clock Tree Synthesis (CTS)
+
+Command:
+
+    run_cts
+
+Operations:
+
+-   Clock buffer insertion
+-   Clock balancing
+-   Clock tree construction
+-   Post-CTS STA
+
+CTS ensures reduced clock skew and balanced clock latency across
+flip-flops.
+
+------------------------------------------------------------------------
+
+# Power Distribution Network (PDN)
+
+Command:
+
+    gen_pdn
+
+PDN generation includes:
+
+-   Power stripes (VDD/VSS)
+-   Power grid formation
+-   Macro/block connection
+-   Core ring formation
+
+Ensures stable power delivery and reduces IR drop risk.
+
+------------------------------------------------------------------------
+
+# Routing
+
+Command:
+
+    run_routing
+
+Routing stages:
+
+Step 15: Global Routing Resizer Optimization
+Step 16: STA
+Step 17: Routing Timing Optimization
+Step 18: STA
+Step 19: Global Routing
+Step 20: Netlist write
+Step 21: STA
+Step 22: Fill Insertion
+Step 23: Detailed Routing
+Step 24: Wire Length Check
+
+------------------------------------------------------------------------
+
+![final](phase5/final.png)
+![final](phase5/f2.png)
+![final](phase5/f3.png)
+![result](rount_result.png)
+
+
+## Routing Observations
+
+-   Global routing completed successfully.
+-   Antenna repair attempted (1 violation remained).
+-   No DRC violations after detailed routing.
+-   Final layout is DRC clean.
+
+
+## Final Routing Result
+
+-   Detailed Routing Completed
+-   No DRC Violations
+-   Wire length report generated
+-   Design ready for final verification
+
+------------------------------------------------------------------------
+
+## Key Learnings
+
+-   Understood full OpenLane backend flow
+-   Learned placement stages and optimization
+-   Understood CTS impact on timing
+-   Studied PDN generation
+-   Differentiated global vs detailed routing
+-   Analyzed antenna effects
+-   Verified DRC clean layout
+-   Interpreted wire length report
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+This lab provided hands-on experience with:
+
+-   Backend Physical Design flow
+-   Placement and legalization
+-   Clock Tree Synthesis
+-   Power Grid generation
+-   Routing optimization
+-   DRC clean layout generation
+
+## Layout
+
+![layout](phase5/layout.png)
+![layout](phase5/l2.png)
+![layout](phase5/l3.png)
+![layout](phase5/l4.png)
+  
+</details>
+
+---
+
+</details>
