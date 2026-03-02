@@ -2292,7 +2292,7 @@ Step 24: Wire Length Check
 ![final](phase5/final.png)
 ![final](phase5/f2.png)
 ![final](phase5/f3.png)
-![result](rount_result.png)
+![result](phase5/rount_result.png)
 
 
 ## Routing Observations
