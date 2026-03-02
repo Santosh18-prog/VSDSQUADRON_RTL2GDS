@@ -1102,15 +1102,18 @@ magic -T ~/.ciel/sky130A/libs.tech/magic/sky130A.tech lef read tmp/merged.nom.le
     to view the details of the selected object.
 
     ![label](phase2/label.png)
-</details>
 
-### why macros like RAM behave differently than standard cells?
+ ### why macros like RAM behave differently than standard cells?
 
 - Because they are large pre-designed memory blocks treated as black boxes, while standard cells are small logic gates.
 
 - RAM delay comes from internal memory access (decoding, wordline, bitline, sensing), whereas standard cell delay is just simple gate delay.
 
 - Also, macros cannot be resized or internally optimized like standard cells during physical design.
+  
+</details>
+
+
 
   ---
   
