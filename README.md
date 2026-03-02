@@ -1742,7 +1742,7 @@ If violated:
 
 ---
 
-## 8. Real Clock Model (Post Routing)
+## 8. Real Clock Model
 
 Clock delay consists of:
 
