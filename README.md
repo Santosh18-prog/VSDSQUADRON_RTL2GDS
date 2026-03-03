@@ -2348,3 +2348,104 @@ This lab provided hands-on experience with:
 ---
 
 </details>
+
+---
+
+## WEEK2
+
+<details>
+<summary><strong>Phase 1 — ORFS Execution in GitHub Codespaces
+ </strong></summary>
+
+--- 
+
+## Task 1.1 – Repository Setup
+
+###  Objective
+Set up the OpenROAD RTL-to-GDS repository using GitHub Codespaces and confirm that the devcontainer environment builds successfully.
+
+Repository:
+https://github.com/vsdip/vsd-scl180-orfs
+
+---
+
+###  Step 1: Fork Repository
+
+- Open the repository link.
+- Click **Fork**.
+- Repository copied to personal GitHub account.
+
+---
+
+###  Step 2: Launch Codespaces
+
+- Open forked repository.
+- Click **Code → Codespaces**.
+- Click **Create codespace on main**.
+- Devcontainer starts building automatically.
+
+✔ Devcontainer successfully built.
+
+---
+
+###  Step 3: Verify Tool Installation
+
+After container build, the following commands were executed in terminal:
+
+### OpenROAD
+```bash
+openroad -version
+```
+Output:
+```
+v2.0-28075-g0f99689f45
+```
+
+### Yosys
+```bash
+yosys -V
+```
+Output:
+```
+Yosys 0.58+94
+```
+
+### Python
+```bash
+python3 --version
+```
+Output:
+```
+Python 3.10.12
+```
+
+### Make
+```bash
+make --version
+```
+Output:
+```
+GNU Make 4.3
+```
+
+All required tools are installed correctly.
+
+---
+
+### Task 1.1 Status
+
+- Repository forked ✔
+- Codespaces launched ✔
+- Devcontainer built successfully ✔
+- OpenROAD verified ✔
+- Yosys verified ✔
+- Python verified ✔
+- Make verified ✔
+
+The environment is ready to run the RTL-to-GDS flow.
+
+---
+
+
+
+<details>
