@@ -2354,8 +2354,7 @@ This lab provided hands-on experience with:
 ## WEEK2
 
 <details>
-<summary><strong>Phase 1 — ORFS Execution in GitHub Codespaces
- </strong></summary>
+<summary><strong>Phase 1 — ORFS Execution in GitHub Codespaces </strong></summary>
 
 --- 
 
@@ -2702,4 +2701,4 @@ This task demonstrates understanding of:
 
 
 
-<details>
+</details>
