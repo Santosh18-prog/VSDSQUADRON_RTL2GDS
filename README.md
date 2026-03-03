@@ -2386,6 +2386,9 @@ https://github.com/vsdip/vsd-scl180-orfs
 
 ✔ Devcontainer successfully built.
 
+![CODE](WEEK-2/Phase1/code.png)
+![CONTAINER](WEEK-2/Phase1/container_build.png)
+
 ---
 
 ###  Step 3: Verify Tool Installation
@@ -2429,6 +2432,8 @@ GNU Make 4.3
 ```
 
 All required tools are installed correctly.
+
+![COMMANDS](WEEK-2/Phase1/commands.png)
 
 ---
 
