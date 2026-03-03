@@ -2577,7 +2577,7 @@ Observed:
 
 ![PLACEMENT](WEEK-2/Phase1/place.png)
 ![PLACEMENT1](WEEK-2/Phase1/place1.png)
-![PLACEMENT2](WEEK-2/Phase1/place_std_layoout.png)
+![PLACEMENT2](WEEK-2/Phase1/place_std_layout.png)
 ![PLACEMENT3](WEEK-2/Phase1/place_l1.png)
 ![PLACEMENT4](WEEK-2/Phase1/place_l2.png)
 ![PLACEMENT5](WEEK-2/Phase1/place_top.png)
