@@ -2490,7 +2490,7 @@ results/sky130hd/riscv32i/base/
 - 1_synth.odb
 - 1_synth.sdc
 
-### EVIDENCE
+### EVIDENCE :
 
 ![SYNTH](WEEK-2/Phase1/synth.png)
 ![SYNTH](WEEK-2/Phase1/synth_1.png)
@@ -2501,7 +2501,7 @@ results/sky130hd/riscv32i/base/
 
 ------------------------------------------------------------
 
-# 2. Floorplan Stage
+## 2. Floorplan Stage
 
 Command:
 make floorplan
@@ -2530,7 +2530,7 @@ Observed:
 - Standard cell rows arranged
 - Power rails present
 
-### EVIDENCE
+### EVIDENCE :
 
 ![FLOOR_PLAN](WEEK-2/Phase1/fp.png)
 ![FLOOR_PLAN](WEEK-2/Phase1/fp1.png)
@@ -2540,7 +2540,7 @@ Observed:
 
 ------------------------------------------------------------
 
-# 3. Placement Stage
+## 3. Placement Stage
 
 Command:
 make place
@@ -2573,18 +2573,18 @@ Observed:
 - No overlaps
 - Congestion manageable
 
-### EVIDENCE
+### EVIDENCE :
 
 ![PLACEMENT](WEEK-2/Phase1/place.png)
-![PLACEMENT](WEEK-2/Phase1/place1.png)
-![PLACEMENT](WEEK-2/Phase1/place_std_layoout.png)
-![PLACEMENT](WEEK-2/Phase1/place_l1.png)
-![PLACEMENT](WEEK-2/Phase1/place_l2.png)
-![PLACEMENT](WEEK-2/Phase1/place_top.png)
+![PLACEMENT1](WEEK-2/Phase1/place1.png)
+![PLACEMENT2](WEEK-2/Phase1/place_std_layoout.png)
+![PLACEMENT3](WEEK-2/Phase1/place_l1.png)
+![PLACEMENT4](WEEK-2/Phase1/place_l2.png)
+![PLACEMENT5](WEEK-2/Phase1/place_top.png)
 
 ------------------------------------------------------------
 
-# 4. Clock Tree Synthesis (CTS)
+## 4. Clock Tree Synthesis (CTS)
 
 Command:
 make cts
@@ -2617,7 +2617,7 @@ Observed:
 - Buffers inserted
 - Balanced clock network
 
-### EVIDENCE
+### EVIDENCE :
 
 ![CTS](WEEK-2/Phase1/make_cts.png)
 ![CTS](WEEK-2/Phase1/cts_final.png)
@@ -2629,7 +2629,7 @@ Observed:
 
 ------------------------------------------------------------
 
-# 5. Routing Stage
+## 5. Routing Stage
 
 Command:
 make route
@@ -2651,7 +2651,7 @@ Visual Confirmation:
 - Vias inserted
 - Fully connected routing
 
-### EVIDENCE
+### EVIDENCE :
 
 ![ROUTING](WEEK-2/Phase1/make_route.png)
 ![ROUTING](WEEK-2/Phase1/route_l2.png)
@@ -2664,7 +2664,7 @@ Visual Confirmation:
 
 ------------------------------------------------------------
 
-# 6. Final Observations
+## 6. Final Observations
 
 ✔ Synthesis completed successfully  
 ✔ Floorplan generated  
