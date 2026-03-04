@@ -2685,18 +2685,12 @@ Command:
 ### Total run time
 RTL → GDS Flow Runtime Summary
 
-'''bash 
+![FINAL_TIME](WEEK-2/Phase1/time_final.png)
 
-Synthesis      : ~35 s
-Floorplanning  : ~15 s
-Placement      : ~70 s
-Clock Tree     : ~78 s
-Routing        : ~41 min
-Finalization   : ~45 s
-
-Total runtime  : ~44 minutes
-
-'''bash
+```text
+Total runtime : 2705 seconds
+              : ~45 minutes
+```
 
 
 ---
