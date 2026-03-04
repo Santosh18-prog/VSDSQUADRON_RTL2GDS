@@ -2663,7 +2663,30 @@ Visual Confirmation:
 
 ------------------------------------------------------------
 
-## 6. Final Observations
+## 6.  Final Layout :
+
+To view final layout
+Command:
+   make gui_final
+
+![FINAL](WEEK2-2/Phase1/final_layout.png)
+
+To view final layout in klayout
+Command:
+   klayout 6_final.gds
+
+![FINAL](WEEK-2/Phase1/final_gds.png)
+
+## 7. Final Timing report:
+
+![FINAL](WEEK2-2/Phase1/final.png)
+![FINAL](WEEK2-2/Phase1/wns.png)
+
+
+---
+
+
+## 8. Final Observations
 
 ✔ Synthesis completed successfully  
 ✔ Floorplan generated  
