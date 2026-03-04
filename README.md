@@ -2669,7 +2669,7 @@ To view final layout
 Command:
    make gui_final
 
-![FINAL](WEEK2-2/Phase1/final_layout.png)
+![FINAL](WEEK-2/Phase1/final_layout.png)
 
 To view final layout in klayout
 Command:
@@ -2679,8 +2679,8 @@ Command:
 
 ## 7. Final Timing report:
 
-![FINAL](WEEK2-2/Phase1/final.png)
-![FINAL](WEEK2-2/Phase1/wns.png)
+![FINAL](WEEK-2/Phase1/final.png)
+![FINAL](WEEK-2/Phase1/wns.png)
 
 
 ---
