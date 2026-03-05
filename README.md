@@ -2735,3 +2735,192 @@ This task demonstrates understanding of:
 
 
 </details>
+
+
+
+<details>
+<summary><strong>Phase 2 — Toolchain Understanding (Devcontainer Deep Dive) </strong></summary>
+</details>
+
+<details>
+<summary><strong>Phase 3 — Local Installation (Self-Owned Environment) </strong></summary>
+
+
+## Objective
+
+The objective of this phase is to replicate the RTL-to-GDS environment locally instead of relying on the cloud environment.
+This includes installing all required tools such as **OpenROAD**, **Yosys**, and the **OpenROAD Flow Scripts (ORFS)** locally on the system.
+
+---
+
+## System Configuration
+
+| Parameter       | Value                 |
+| --------------- | --------------------- |
+| OS              | Ubuntu 22.04          |
+| Architecture    | x86_64                |
+| Shell           | Bash                  |
+| Tools Installed | OpenROAD, Yosys, ORFS |
+
+---
+
+## Task 3.1 — Install ORFS Locally
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/vsdip/vsd-scl180-orfs.git
+```
+
+Navigate to the flow directory:
+
+```bash
+cd vsd-scl180-orfs/orfs/flow
+```
+
+---
+
+### Verify Make Installation
+
+```bash
+make --version
+```
+
+Output:
+
+```
+GNU Make 4.3
+```
+
+---
+
+### Verify Yosys Installation
+
+```bash
+yosys -V
+```
+
+Output:
+
+```
+Yosys 0.32
+```
+
+
+### Verify OpenROAD Installation
+
+```bash
+openroad -version
+```
+
+Output:
+
+```
+26Q1-1641-gea64bf0552
+```
+
+---
+
+### Verify OpenROAD Path
+
+```bash
+which openroad
+```
+
+Output:
+
+```
+/home/santosh/OpenROAD/build/bin/openroad
+```
+
+### Environment Variable Validation
+
+To ensure OpenROAD can be executed globally, the following path was added to the system environment:
+
+```bash
+export PATH=$PATH:$HOME/OpenROAD/build/bin
+```
+
+Verification:
+
+```bash
+echo $PATH
+```
+
+---
+
+## Task 3.2 — Install Official OpenROAD
+
+### Clone OpenROAD Repository
+
+```bash
+git clone https://github.com/The-OpenROAD-Project/OpenROAD.git
+cd OpenROAD
+```
+
+---
+
+### Install Dependencies
+
+```bash
+sudo ./etc/DependencyInstaller.sh -base
+./etc/DependencyInstaller.sh -common -local
+```
+
+---
+
+### Build OpenROAD
+
+OpenROAD was built locally using the official build script.
+
+```bash
+./etc/Build.sh -threads=1
+```
+
+Compilation completed successfully.
+
+---
+
+### Verify OpenROAD Installation
+
+```bash
+openroad -version
+```
+
+Output:
+
+```
+26Q1-1641-gea64bf0552
+```
+
+---
+
+# Installation Evidence
+
+The following commands confirm successful installation:
+
+```bash
+openroad -version
+yosys -V
+which openroad
+```
+
+---
+
+# Summary
+
+In this phase:
+
+* OpenROAD Flow Scripts repository was cloned locally.
+* Dependencies required for OpenROAD were installed.
+* OpenROAD was compiled successfully from source.
+* Environment variables were configured to enable global access.
+* Tool versions were verified using terminal commands.
+
+This confirms that the **RTL-to-GDS environment is successfully replicated on the local machine**.
+
+---
+
+
+  </details>
+
