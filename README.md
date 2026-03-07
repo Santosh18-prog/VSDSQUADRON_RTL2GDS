@@ -2958,7 +2958,7 @@ yosys -V
 Output:
 
 ```
-Yosys 0.32
+Yosys 0.63+43
 ```
 
 
@@ -2988,6 +2988,8 @@ Output:
 /home/santosh/OpenROAD/build/bin/openroad
 ```
 
+![OPENROAD](WEEK-2/Phase2/version.png)
+
 ### Environment Variable Validation
 
 To ensure OpenROAD can be executed globally, the following path was added to the system environment:
@@ -3012,6 +3014,8 @@ echo $PATH
 git clone https://github.com/The-OpenROAD-Project/OpenROAD.git
 cd OpenROAD
 ```
+
+![openroad](WEEK-2/Phase2/openroad.jpeg)
 
 ---
 
@@ -3047,6 +3051,11 @@ Output:
 ```
 26Q1-1641-gea64bf0552
 ```
+
+![dependencies](WEEK-2/Phase2/dependency.jpeg)
+![build](WEEK-2/Phase2/build0.jpeg)
+![build](WEEK-2/Phase2/build1.jpeg)
+![build](WEEK-2/Phase2/build.jpeg)
 
 ---
 
