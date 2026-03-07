@@ -2670,6 +2670,7 @@ Command:
    make gui_final
 
 ![FINAL](WEEK-2/Phase1/final_layout.png)
+![FINAL](WEEK-2/Phase1.final_.png)
 
 To view final layout in klayout
 Command:
@@ -2740,9 +2741,163 @@ This task demonstrates understanding of:
 
 <details>
 <summary><strong>Phase 2 — Toolchain Understanding (Devcontainer Deep Dive) </strong></summary>
+
+## PHASE 2 — Toolchain Understanding
+
+In this phase, the goal is to understand how the ORFS devcontainer installs and manages the RTL-to-GDS toolchain.  
+The files studied in this phase are:
+
+- `.devcontainer/Dockerfile`
+- `.devcontainer/install-openroad.sh`
+
+These files define how the development environment is created and how the necessary tools for chip design are installed.
+
+---
+
+## Task 2.1 — Toolchain Mapping
+
+The ORFS devcontainer installs several open-source tools required to convert a hardware design from **RTL code to a manufacturable GDSII layout**.
+
+Some tools are installed by **cloning their GitHub repositories and compiling them from source**, while others are installed using the **Linux package manager**.
+
+Below is a summary of the main tools used in the RTL-to-GDS flow.
+
+| Tool | Installed From | Purpose in Flow | Stage Used |
+|-----|-----|-----|-----|
+| OpenROAD | GitHub (compiled from source) | Main physical design engine used for floorplanning, placement, clock tree synthesis, routing and GDS generation | Physical Design |
+| Yosys | GitHub (compiled from source) | Performs RTL synthesis and converts Verilog code into a gate-level netlist | Synthesis |
+| TritonCTS | Integrated inside OpenROAD | Generates the clock distribution network for flip-flops | Clock Tree Synthesis |
+| FastRoute | Integrated inside OpenROAD | Performs global routing of signal connections | Routing |
+| OpenSTA | GitHub (compiled from source) | Performs static timing analysis to verify timing constraints | Timing Analysis |
+| KLayout | Installed via package manager | Used to visualize DEF and GDS layout files | Layout Visualization |
+| Python | Installed via package manager | Used for scripting and automation in the design flow | Automation |
+| Make | Installed via package manager | Controls the design flow execution through Makefiles | Flow Control |
+| Git | Installed via package manager | Used for cloning repositories and managing source code | Version Control |
+
+---
+
+## Task 2.2 — Flow Architecture Explanation
+
+### What ORFS Automates
+
+The **OpenROAD Flow Scripts (ORFS)** automate the entire process of converting a hardware design written in **Verilog RTL** into a **physical chip layout (GDSII)**.
+
+Normally, chip design requires running multiple tools separately for synthesis, floorplanning, placement, clock tree synthesis, routing, and timing verification.
+
+ORFS integrates all these stages into a **single automated flow**, ensuring that each stage runs in the correct order and produces the required intermediate results.
+
+---
+
+### How Makefiles Orchestrate the Flow
+
+The ORFS flow is controlled using **Makefiles**.
+
+A Makefile contains multiple targets that represent different stages of the RTL-to-GDS flow. Each target executes scripts that run the necessary tools.
+
+For example:
+
+- `make synth` → runs synthesis using Yosys  
+- `make floorplan` → creates the chip floorplan  
+- `make place` → performs cell placement  
+- `make cts` → generates the clock tree  
+- `make route` → performs routing  
+
+The entire flow can be executed using a single command:
+
+```
+make DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+The Makefile automatically ensures that each stage runs only after the previous stage has completed successfully.
+
+---
+
+### Where Synthesis Ends and Physical Design Begins
+
+The **synthesis stage** is performed using **Yosys**.
+
+In this stage, the Verilog RTL design is converted into a **gate-level netlist** using standard cells from the technology library.
+
+Once the gate-level netlist is generated, the synthesis stage ends.
+
+After synthesis, the design moves into the **physical design stage**, which is handled by OpenROAD. In this stage, the logical netlist is converted into a physical chip layout.
+
+---
+
+### Where Timing is Checked
+
+Timing verification is performed using **OpenSTA**.
+
+Timing analysis is done at multiple stages of the design flow, including:
+
+- After synthesis
+- After placement
+- After clock tree synthesis
+- After routing
+
+OpenSTA checks whether the design meets timing constraints such as **setup time and hold time**. If timing violations occur, optimization steps such as buffer insertion or cell resizing may be applied.
+
+---
+
+### Where the Final GDS is Produced
+
+The **GDSII file** is produced at the final stage of the OpenROAD flow after routing and design rule checks are completed.
+
+The generated GDS file represents the final physical layout of the chip and can be viewed using layout visualization tools such as **KLayout**.
+
+The output file is typically located in the following directory:
+
+```
+flow/results/<platform>/<design>/base/6_final.gds
+```
+
+This file is the final result of the RTL-to-GDS flow and is the layout that would be sent for semiconductor fabrication.
+
+---
+
+# RTL-to-GDS Flow Overview
+
+The simplified RTL-to-GDS design flow is shown below:
+
+```
+RTL (Verilog)
+      │
+      ▼
+Synthesis (Yosys)
+      │
+      ▼
+Gate Level Netlist
+      │
+      ▼
+Floorplanning (OpenROAD)
+      │
+      ▼
+Placement (OpenROAD)
+      │
+      ▼
+Clock Tree Synthesis (TritonCTS)
+      │
+      ▼
+Routing (FastRoute / OpenROAD)
+      │
+      ▼
+Timing Analysis (OpenSTA)
+      │
+      ▼
+Final Layout Generation
+      │
+      ▼
+GDSII File
+```
+
+This automated pipeline ensures that a hardware design can be reliably transformed from **RTL code into a manufacturable chip layout**.
+
+---
+
 </details>
 
 <details>
+  
 <summary><strong>Phase 3 — Local Installation (Self-Owned Environment) </strong></summary>
 
 
