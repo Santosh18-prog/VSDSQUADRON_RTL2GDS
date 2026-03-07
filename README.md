@@ -2670,7 +2670,7 @@ Command:
    make gui_final
 
 ![FINAL](WEEK-2/Phase1/final_layout.png)
-![FINAL](WEEK-2/Phase1.final_.png)
+![FINAL](WEEK-2/Phase1/final_.png)
 
 To view final layout in klayout
 Command:
