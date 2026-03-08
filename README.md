@@ -2742,9 +2742,9 @@ This task demonstrates understanding of:
 <details>
 <summary><strong>Phase 2 — Toolchain Understanding (Devcontainer Deep Dive) </strong></summary>
 
-## PHASE 2 — Toolchain Understanding
+## Objective
 
-In this phase, the goal is to understand how the ORFS devcontainer installs and manages the RTL-to-GDS toolchain.  
+The objective of this phase is to understand how the ORFS devcontainer installs and manages the RTL-to-GDS toolchain.  
 The files studied in this phase are:
 
 - `.devcontainer/Dockerfile`
