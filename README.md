@@ -3088,3 +3088,206 @@ This confirms that the **RTL-to-GDS environment is successfully replicated on th
 
   </details>
 
+ <details>
+  
+<summary><strong>PHASE 4 — Re-Run RTL-to-GDS Locally </strong></summary>
+
+# PHASE 4 — Re-Run RTL-to-GDS Locally
+
+## Objective
+Re-execute the RTL-to-GDS flow locally using the same testcase used in Phase-1 and verify each stage of the physical design flow.
+
+---
+
+# Step 1 — Navigate to Flow Directory
+
+```
+cd ~/vsd-scl180-orfs/orfs/flow
+```
+
+Verify location:
+
+```
+pwd
+```
+
+---
+
+# Step 2 — Run Synthesis
+
+RTL synthesis converts Verilog RTL into a gate-level netlist using Yosys.
+
+```
+make synth DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+Verify synthesis log:
+
+```
+cat logs/sky130hd/riscv32i/base/1_2_yosys.log
+```
+
+![synth](WEEK-2/Phase4/synth.jpeg)
+
+---
+
+# Step 3 — Run Floorplanning
+
+Floorplanning defines the chip area, core utilization and power grid.
+
+```
+make floorplan DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+Verify floorplan log:
+
+```
+cat logs/sky130hd/riscv32i/base/2_1_floorplan.log
+```
+
+![floor](WEEK-2/Phase4/floorplan.jpeg)
+
+---
+
+# Step 4 — Run Placement
+
+Placement determines the physical location of all standard cells.
+
+```
+make place DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+Verify placement log:
+
+```
+cat logs/sky130hd/riscv32i/base/3_3_place_gp.log
+```
+
+![place](WEEK-2/Phase4/place.jpeg)
+![place](WEEK-2/Phase4/placement.jpeg)
+
+---
+
+# Step 5 — Run Clock Tree Synthesis (CTS)
+
+CTS distributes the clock signal across the design.
+
+```
+make cts DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+Verify CTS log:
+
+```
+cat logs/sky130hd/riscv32i/base/4_1_cts.log
+```
+
+![cts](WEEK-2/Phase4/cts.jpeg)
+
+---
+
+# Step 6 — Run Routing
+
+Routing connects all cells using metal layers.
+
+```
+make route DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+Verify routing log:
+
+```
+cat logs/sky130hd/riscv32i/base/5_2_route.log
+```
+
+![route](WEEK-2/Phase4/route.jpeg)
+
+---
+
+# Step 7 — Generate Final Reports
+
+```
+make finish DESIGN_NAME=riscv32i PLATFORM=sky130hd
+```
+
+View final report:
+
+```
+cat reports/sky130hd/riscv32i/base/6_finish.rpt
+```
+![timing](WEEK-2/Phase4/timing.jpeg)
+
+Observed values:
+
+```
+WNS = -0.67
+TNS = -12.76
+```
+
+---
+
+# Step 8 — Verify Final GDS File
+
+```
+ls results/sky130hd/riscv32i/base
+```
+
+Expected file:
+
+```
+6_final.gds
+```
+
+This file represents the final manufacturable chip layout.
+
+To observe gds layout
+
+```
+make gui_final
+```
+
+![gds](WEEK-2/Phase4/layout.jpeg)
+
+---
+
+# Runtime Measurement
+
+The runtime of the RTL-to-GDS flow was measured using:
+
+```
+time make
+```
+
+Local runtime:
+
+```
+~39 minutes
+```
+
+Cloud runtime:
+
+```
+2705 seconds (~45 minutes)
+```
+
+---
+
+# Cloud vs Local Comparison
+
+| Metric | Cloud | Local |
+|------|------|------|
+| Runtime | 2705 s (~45 min) | ~39 min |
+| WNS | -0.57 | -0.67 |
+| TNS | -10.31 | -12.76 |
+| GDS Generated | Yes | Yes |
+
+---
+
+# Conclusion
+
+The RTL-to-GDS flow was successfully executed locally using OpenROAD Flow Scripts.  
+All stages including synthesis, floorplanning, placement, CTS, routing, and timing analysis completed successfully and produced the final GDS layout.
+
+---
+
+</details>
