@@ -3092,14 +3092,12 @@ This confirms that the **RTL-to-GDS environment is successfully replicated on th
   
 <summary><strong>PHASE 4 — Re-Run RTL-to-GDS Locally </strong></summary>
 
-# PHASE 4 — Re-Run RTL-to-GDS Locally
-
 ## Objective
 Re-execute the RTL-to-GDS flow locally using the same testcase used in Phase-1 and verify each stage of the physical design flow.
 
 ---
 
-# Step 1 — Navigate to Flow Directory
+## Step 1 — Navigate to Flow Directory
 
 ```
 cd ~/vsd-scl180-orfs/orfs/flow
@@ -3113,7 +3111,7 @@ pwd
 
 ---
 
-# Step 2 — Run Synthesis
+## Step 2 — Run Synthesis
 
 RTL synthesis converts Verilog RTL into a gate-level netlist using Yosys.
 
@@ -3131,7 +3129,7 @@ cat logs/sky130hd/riscv32i/base/1_2_yosys.log
 
 ---
 
-# Step 3 — Run Floorplanning
+## Step 3 — Run Floorplanning
 
 Floorplanning defines the chip area, core utilization and power grid.
 
@@ -3149,7 +3147,7 @@ cat logs/sky130hd/riscv32i/base/2_1_floorplan.log
 
 ---
 
-# Step 4 — Run Placement
+## Step 4 — Run Placement
 
 Placement determines the physical location of all standard cells.
 
@@ -3168,7 +3166,7 @@ cat logs/sky130hd/riscv32i/base/3_3_place_gp.log
 
 ---
 
-# Step 5 — Run Clock Tree Synthesis (CTS)
+## Step 5 — Run Clock Tree Synthesis (CTS)
 
 CTS distributes the clock signal across the design.
 
@@ -3186,7 +3184,7 @@ cat logs/sky130hd/riscv32i/base/4_1_cts.log
 
 ---
 
-# Step 6 — Run Routing
+## Step 6 — Run Routing
 
 Routing connects all cells using metal layers.
 
@@ -3204,7 +3202,7 @@ cat logs/sky130hd/riscv32i/base/5_2_route.log
 
 ---
 
-# Step 7 — Generate Final Reports
+## Step 7 — Generate Final Reports
 
 ```
 make finish DESIGN_NAME=riscv32i PLATFORM=sky130hd
@@ -3226,7 +3224,7 @@ TNS = -12.76
 
 ---
 
-# Step 8 — Verify Final GDS File
+## Step 8 — Verify Final GDS File
 
 ```
 ls results/sky130hd/riscv32i/base
@@ -3250,7 +3248,7 @@ make gui_final
 
 ---
 
-# Runtime Measurement
+## Runtime Measurement
 
 The runtime of the RTL-to-GDS flow was measured using:
 
@@ -3272,7 +3270,7 @@ Cloud runtime:
 
 ---
 
-# Cloud vs Local Comparison
+## Cloud vs Local Comparison
 
 | Metric | Cloud | Local |
 |------|------|------|
@@ -3283,7 +3281,7 @@ Cloud runtime:
 
 ---
 
-# Conclusion
+## Conclusion
 
 The RTL-to-GDS flow was successfully executed locally using OpenROAD Flow Scripts.  
 All stages including synthesis, floorplanning, placement, CTS, routing, and timing analysis completed successfully and produced the final GDS layout.
@@ -3291,3 +3289,209 @@ All stages including synthesis, floorplanning, placement, CTS, routing, and timi
 ---
 
 </details>
+
+ <details>
+  
+<summary><strong>PHASE 5 — Debugging and Unix Literacy </strong></summary>
+
+# PHASE 5 — Debugging and Unix Literacy
+
+## Objective
+The objective of this phase is to demonstrate familiarity with basic Unix/Linux commands used for debugging and inspecting the RTL-to-GDS flow environment.
+
+The following commands were used during the OpenROAD Flow Scripts (ORFS) workflow to navigate directories, inspect logs, search for timing violations, and analyze design outputs.
+
+Commands demonstrated:
+
+ls  
+cd  
+pwd  
+grep  
+find  
+cat  
+less  
+echo  
+export  
+
+---
+
+## 1. Navigating Directories (cd, pwd)
+
+The `cd` command is used to navigate between directories and `pwd` prints the current working directory.
+
+### Command
+
+```bash
+cd vsd-scl180-orfs/orfs/flow
+pwd
+```
+
+### Example Output
+
+```
+/home/santosh/vsd-scl180-orfs/orfs/flow
+```
+
+This confirms the working directory of the OpenROAD flow environment.
+
+
+
+## 2. Listing Files (ls)
+
+The `ls` command is used to list files and directories.
+
+### Command
+
+```bash
+ls
+```
+
+### Example Output
+
+```
+designs
+logs
+Makefile
+objects
+platforms
+reports
+results
+scripts
+```
+
+This shows the structure of the ORFS flow directory.
+
+
+
+## 3. Inspecting Flow Logs (cat)
+
+The `cat` command is used to display the contents of log files.
+
+### Command
+
+```bash
+cat logs/sky130hd/riscv32i/base/1_synth.log
+```
+
+This log confirms successful synthesis using OpenROAD.
+
+Example output includes:
+
+```
+write_db ./results/sky130hd/riscv32i/base/1_synth.odb
+write_sdc ./results/sky130hd/riscv32i/base/1_synth.sdc
+Elapsed time: 0:00.70
+```
+
+
+
+## 4. Searching Logs Using grep
+
+The `grep` command is used to search specific patterns inside log files.
+
+### Command
+
+```bash
+grep slack *.log
+```
+
+### Example Output
+
+```
+Timing-driven: worst slack -7.1e-10
+Clock clk slack -0.810
+```
+
+This helps identify timing violations or negative slack values in the logs.
+
+
+
+## 5. Finding Files Using find
+
+The `find` command searches for files in a directory hierarchy.
+
+### Command
+
+```bash
+find ~/vsd-scl180-orfs -name "6_final.def"
+```
+
+### Example Output
+
+```
+/home/santosh/vsd-scl180-orfs/orfs/flow/results/sky130hd/riscv32i/base/6_final.def
+```
+
+This confirms the location of the final design output file.
+
+
+## 6. Inspecting Makefiles
+
+Makefiles define the automation steps of the RTL-to-GDS flow.
+
+### Command
+
+```bash
+less Makefile
+```
+
+The Makefile contains definitions for synthesis, floorplanning, placement, CTS, routing, and report generation.
+
+
+## 7. Printing Output Using echo
+
+The `echo` command prints text or variable values.
+
+### Command
+
+```bash
+echo $DESIGN_NAME
+```
+
+### Output
+
+```
+riscv32i
+```
+
+This confirms the value of the design environment variable.
+
+
+## 8. Environment Variables (export)
+
+Environment variables allow configuration of flow parameters.
+
+### Command
+
+```bash
+export DESIGN_NAME=riscv32i
+echo $DESIGN_NAME
+```
+
+### Output
+
+```
+riscv32i
+```
+
+This demonstrates setting and retrieving environment variables in the Unix shell.
+
+## EVIDENCE:
+
+![1](WEEK-2/Phase5/1.jpeg)
+![2](WEEK-2/Phase5/2.jpeg)
+![3](WEEK-2/Phase5/3.jpeg)
+![4](WEEK-2/Phase5/4.jpeg)
+
+
+---
+
+# Conclusion
+
+Basic Unix debugging commands were used to inspect logs, analyze timing violations, navigate the project directory structure, and verify environment variables within the OpenROAD RTL-to-GDS flow environment.
+
+These commands are essential for debugging design flows and understanding the outputs generated during synthesis and physical design stages.
+
+---
+
+ </details>
