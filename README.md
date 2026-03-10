@@ -4,7 +4,7 @@
 
 
 <details>
-<summary><strong>Phase 1 — OpenLANE Flow Familiarity </strong></summary>
+<summary><strong>PHASE 1 — OpenLANE Flow Familiarity </strong></summary>
 
 --- 
 
@@ -472,7 +472,7 @@ The above timing report shows the synthesis stage timing analysis results.
 
 
 <details>
-<summary><strong>Phase 2 — Floorplan Fundamentals</strong></summary>
+<summary><strong>PHASE 2 — Floorplan Fundamentals</strong></summary>
 
 ---
 
@@ -1120,7 +1120,7 @@ magic -T ~/.ciel/sky130A/libs.tech/magic/sky130A.tech lef read tmp/merged.nom.le
 </details>
 
 <details>
-<summary><strong>Phase 3 — Timing Literacy with Ideal Clocks</strong></summary>
+<summary><strong>PHASE 3 — Timing Literacy with Ideal Clocks</strong></summary>
   
 ---
 
@@ -1495,7 +1495,7 @@ Upsizing buffer:
 </details>
 
 <details>
-  <summary><strong>Phase 4 — CTS and Timing with Real Clocks</strong></summary>
+  <summary><strong>PHASE 4 — CTS and Timing with Real Clocks</strong></summary>
 
   ---
   <details>
@@ -1986,7 +1986,7 @@ This lab provided hands-on understanding of:
 </details>
 
 <details>
-  <summary><strong>Phase 5 — PDN Awareness  </strong></summary>
+  <summary><strong>PHASE 5 — PDN Awareness  </strong></summary>
 
   ---
 <details>
@@ -2355,7 +2355,7 @@ This lab provided hands-on experience with:
 
 
 <details>
-<summary><strong>Phase 1 — ORFS Execution in GitHub Codespaces </strong></summary>
+<summary><strong>PHASE 1 — ORFS Execution in GitHub Codespaces </strong></summary>
 
 --- 
 
@@ -2741,7 +2741,7 @@ This task demonstrates understanding of:
 
 
 <details>
-<summary><strong>Phase 2 — Toolchain Understanding (Devcontainer Deep Dive) </strong></summary>
+<summary><strong>PHASE 2 — Toolchain Understanding (Devcontainer Deep Dive) </strong></summary>
 
 ## Objective
 
@@ -2899,7 +2899,7 @@ This automated pipeline ensures that a hardware design can be reliably transform
 
 <details>
   
-<summary><strong>Phase 3 — Local Installation (Self-Owned Environment) </strong></summary>
+<summary><strong>PHASE 3 — Local Installation (Self-Owned Environment) </strong></summary>
 
 
 ## Objective
