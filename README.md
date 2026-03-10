@@ -1,6 +1,6 @@
 # 🚀 VSD-Squadron RTL2GDSII SOC Implementation 
 
-## WEEK-1
+## WEEK-1 (Digital VLSI SoC Design and Planning – Foundation Phase)
 
 
 <details>
@@ -2351,7 +2351,8 @@ This lab provided hands-on experience with:
 
 ---
 
-## WEEK2
+## WEEK2 (Toolchain Mastery and ORFS Execution [Cloud to Local])
+
 
 <details>
 <summary><strong>Phase 1 — ORFS Execution in GitHub Codespaces </strong></summary>
@@ -3499,14 +3500,10 @@ These commands are essential for debugging design flows and understanding the ou
 
 ---
 
-## WEEK-3
+## WEEK-3 (Block-Level Verification of VSDSquadron SoC)
 
 <details>
-<summary><strong>Phase 1 — OpenLANE Flow Familiarity </strong></summary>
-
-## Task 1 — Run SPI Master Test
-
-# WEEK-3 — Block Level Verification
+<summary><strong>PHASE 1 — Standalone Block Verification </strong></summary>
 
 ## Task-1: SPI Master Standalone Verification
 
