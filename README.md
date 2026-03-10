@@ -3495,3 +3495,203 @@ These commands are essential for debugging design flows and understanding the ou
 ---
 
  </details>
+
+
+---
+
+## WEEK-3
+
+<details>
+<summary><strong>Phase 1 — OpenLANE Flow Familiarity </strong></summary>
+
+## Task 1 — Run SPI Master Test
+
+# WEEK-3 — Block Level Verification
+
+## Task-1: SPI Master Standalone Verification
+
+### Objective
+
+The objective of this task is to perform **standalone block-level verification of the SPI Master module** in the VSDSquadron SoC.
+This test ensures that the SPI controller operates correctly when driven by firmware running on the embedded **VexRiscv CPU**.
+
+---
+
+### Repository Setup
+
+Clone the VSDSquadron SoC repository:
+
+```bash
+git clone https://github.com/vsdip/vsdsquadron-soc
+cd vsdsquadron-soc
+```
+
+Navigate to the SPI Master standalone test directory:
+
+```bash
+cd caravel_mgmt_soc_litex/verilog/dv/tests-standalone/spi_master
+```
+
+---
+
+### Running the Test
+
+Clean previous simulation files:
+
+```bash
+make clean
+```
+
+Run the simulation:
+
+```bash
+make
+```
+
+---
+
+### Verification Architecture
+
+The standalone verification environment includes the following components:
+
+| Component                     | Description                                      |
+| ----------------------------- | ------------------------------------------------ |
+| Firmware (`spi_master.c`)     | Software program controlling SPI                 |
+| VexRiscv CPU                  | Embedded RISC-V processor executing firmware     |
+| SPI Master RTL                | Hardware block responsible for SPI communication |
+| SPI Flash Model               | Simulated external SPI device                    |
+| Testbench (`spi_master_tb.v`) | Monitors SPI transactions and validates results  |
+
+---
+
+### Simulation Flow
+
+The simulation executes through the following sequence:
+
+1. The firmware (`spi_master.c`) is compiled using the **RISC-V cross compiler**.
+2. The compiler generates an **ELF executable file** containing program instructions.
+3. The ELF file is converted into a **HEX memory image** using `objcopy`.
+4. The HEX file is loaded into the **instruction memory** of the SoC.
+5. The **VexRiscv CPU fetches and executes the firmware instructions**.
+6. The firmware writes to **memory-mapped SPI control registers**.
+7. The SPI Master hardware performs SPI transactions with the **SPI flash model**.
+8. The **testbench monitors SPI data** and verifies correctness.
+9. The simulation reports **PASS or FAIL** based on the results.
+
+---
+
+### Toolchain Used
+
+| Tool                          | Purpose                           |
+| ----------------------------- | --------------------------------- |
+| `riscv64-unknown-elf-gcc`     | Compiles firmware                 |
+| `riscv64-unknown-elf-objcopy` | Converts ELF to HEX               |
+| `iverilog`                    | Compiles RTL design and testbench |
+| `vvp`                         | Executes simulation               |
+| `gtkwave`                     | Waveform visualization            |
+
+---
+
+### Key Simulation Commands
+
+During execution, the following tools are invoked automatically:
+
+```bash
+riscv64-unknown-elf-gcc
+riscv64-unknown-elf-objcopy
+iverilog
+vvp
+```
+
+---
+
+### Simulation Output
+
+Example output observed during simulation:
+
+```
+SPI value = 0x93 (should be 0x93)
+SPI value = 0x01 (should be 0x01)
+SPI value = 0x00 (should be 0x00)
+SPI value = 0x13 (should be 0x13)
+SPI value = 0x02 (should be 0x02)
+SPI value = 0x63 (should be 0x63)
+SPI value = 0x57 (should be 0x57)
+SPI value = 0xb5 (should be 0xb5)
+
+Monitor: Test SPI Master (RTL) Passed
+```
+
+---
+
+### Result
+
+**SPI Master Test Status:**
+
+PASS
+
+The SPI controller successfully transmitted and received the expected values.
+The testbench confirmed correct functionality of the SPI Master block.
+
+---
+
+### Waveform Generation
+
+The simulation generates a waveform file:
+
+```
+RTL-spi_master.vcd
+```
+
+Waveforms can be viewed using **GTKWave**:
+
+```bash
+gtkwave RTL-spi_master.vcd
+```
+
+Signals observed include:
+
+* SPI clock
+* MOSI
+* MISO
+* Chip select
+* Debug GPIO signals
+
+---
+
+### Verification Flow Diagram
+
+```
+Firmware (spi_master.c)
+        ↓
+RISC-V Compiler
+        ↓
+spi_master.elf
+        ↓
+ELF → HEX Conversion
+        ↓
+spi_master.hex loaded into memory
+        ↓
+VexRiscv CPU executes firmware
+        ↓
+CPU configures SPI registers
+        ↓
+SPI Master hardware performs transfer
+        ↓
+SPI Flash Model responds
+        ↓
+Testbench validates data
+        ↓
+PASS / FAIL
+```
+
+---
+
+### Conclusion
+
+This standalone verification confirms that the **SPI Master hardware block operates correctly when controlled by firmware running on the VexRiscv CPU**.
+The simulation successfully validates the interaction between **firmware, CPU, SPI hardware, and external device model**, demonstrating correct block-level functionality.
+
+---
+
+</details>
