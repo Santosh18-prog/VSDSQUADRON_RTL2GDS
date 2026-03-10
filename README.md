@@ -2351,7 +2351,7 @@ This lab provided hands-on experience with:
 
 ---
 
-## WEEK2 (Toolchain Mastery and ORFS Execution [Cloud to Local])
+## WEEK-2 (Toolchain Mastery and ORFS Execution [Cloud to Local])
 
 
 <details>
