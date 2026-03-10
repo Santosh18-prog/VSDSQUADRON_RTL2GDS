@@ -3505,14 +3505,14 @@ These commands are essential for debugging design flows and understanding the ou
 <details>
 <summary><strong>PHASE 1 — Standalone Block Verification </strong></summary>
 
-## Task-1: SPI Master Standalone Verification
-
 ### Objective
 
 The objective of this task is to perform **standalone block-level verification of the SPI Master module** in the VSDSquadron SoC.
 This test ensures that the SPI controller operates correctly when driven by firmware running on the embedded **VexRiscv CPU**.
 
 ---
+
+## Task-1: SPI Master Standalone Verification
 
 ### Repository Setup
 
@@ -3546,6 +3546,39 @@ make
 ```
 
 ---
+
+### Simulation Output
+
+Example output observed during simulation:
+
+```
+SPI value = 0x93 (should be 0x93)
+SPI value = 0x01 (should be 0x01)
+SPI value = 0x00 (should be 0x00)
+SPI value = 0x13 (should be 0x13)
+SPI value = 0x02 (should be 0x02)
+SPI value = 0x63 (should be 0x63)
+SPI value = 0x57 (should be 0x57)
+SPI value = 0xb5 (should be 0xb5)
+
+Monitor: Test SPI Master (RTL) Passed
+```
+
+---
+
+
+### Result
+
+**SPI Master Test Status:**
+
+PASS
+
+The SPI controller successfully transmitted and received the expected values.
+The testbench confirmed correct functionality of the SPI Master block.
+
+---
+
+## Task 2 — Understand the Verification Flow
 
 ### Verification Architecture
 
@@ -3598,25 +3631,6 @@ riscv64-unknown-elf-gcc
 riscv64-unknown-elf-objcopy
 iverilog
 vvp
-```
-
----
-
-### Simulation Output
-
-Example output observed during simulation:
-
-```
-SPI value = 0x93 (should be 0x93)
-SPI value = 0x01 (should be 0x01)
-SPI value = 0x00 (should be 0x00)
-SPI value = 0x13 (should be 0x13)
-SPI value = 0x02 (should be 0x02)
-SPI value = 0x63 (should be 0x63)
-SPI value = 0x57 (should be 0x57)
-SPI value = 0xb5 (should be 0xb5)
-
-Monitor: Test SPI Master (RTL) Passed
 ```
 
 ---
