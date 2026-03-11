@@ -3706,3 +3706,201 @@ The simulation successfully validates the interaction between **firmware, CPU, S
 ---
 
 </details>
+
+<details>
+<summary><strong>PHASE 2 — Run All Standalone Tests </strong></summary>
+
+In this phase, standalone verification tests were executed for all hardware blocks present in the tests-standalone directory of the VSDSquadron SoC repository.
+
+Each block contains:
+
+. Firmware program
+
+. Verilog RTL modules
+
+. Testbench
+
+. Makefile for simulation automation
+
+The purpose of this phase is to verify individual hardware blocks by running firmware-driven simulations and observing the PASS / FAIL results.
+
+### Standalone Tests Directory
+
+Navigate to the standalone verification tests directory:
+
+cd vsdsquadron-soc/caravel_mgmt_soc_litex/verilog/dv/tests-standalone
+
+Each block inside this directory contains a dedicated test environment.
+
+Example directories:
+
+gpio_mgmt
+mem
+uart
+timer
+irq
+debug
+spi_master
+
+### Procedure Followed for Each Block
+
+For each standalone test, the following steps were executed:
+
+cd <test_directory>
+
+make clean
+make
+
+During execution the Makefile automatically performs the following tasks:
+
+1. Compiles firmware using the RISC-V cross compiler
+
+2. Generates an ELF executable file
+
+3. Converts the ELF file into a HEX memory file
+
+4. Loads the HEX into the SPI Flash memory model
+
+5. Compiles RTL and testbench using Icarus Verilog
+
+6. Runs the simulation
+
+7. Testbench monitors outputs and prints PASS / FAIL
+
+ ---
+
+### Verification Flow
+
+make
+↓
+Firmware Compilation (C → ELF)
+↓
+ELF → HEX Conversion
+↓
+HEX loaded into Flash Memory
+↓
+RTL + Testbench Compilation (iverilog)
+↓
+Simulation Execution (vvp)
+↓
+CPU Executes Firmware Instructions
+↓
+Hardware Block Operation
+↓
+Testbench Monitors Results
+↓
+PASS / FAIL
+
+---
+
+### Standalone Test Results
+
+| Standalone Test | Status (sky130) |
+|-----------------|----------------|
+| GPIO Mgmt       | PASS           |
+| MEM             | PASS           |
+| UART            | Not Executed   |
+| TIMER           | FAIL           |
+| IRQ             | FAIL           |
+| DEBUG           | FAIL           |
+| SPI Master      | PASS           |
+
+---
+
+###  Observations
+### Passing Tests
+
+The following modules successfully passed verification:
+
+GPIO Management
+Memory
+SPI Master
+
+These blocks executed firmware instructions correctly and produced the expected results.
+
+---
+
+### Failed Tests
+
+The following tests failed due to timeout during simulation:
+
+Timer
+IRQ
+Debug
+
+In these cases, the expected output condition was not reached before the simulation timeout.
+
+Possible reasons include:
+
+. Firmware execution not reaching expected condition
+
+. Testbench waiting for specific signal pattern
+
+. Debug interface not being triggered
+
+However, the simulation environment executed correctly and waveform files were generated.
+
+---
+
+### Generated Waveform Files
+
+Each test generated a waveform file (.vcd) for debugging.
+
+Example waveform files:
+
+RTL-gpio_mgmt.vcd
+RTL-mem.vcd
+RTL-spi_master.vcd
+RTL-debug.vcd
+RTL-irq.vcd
+RTL-timer.vcd
+
+These can be opened using GTKWave:
+
+gtkwave RTL-spi_master.vcd
+
+---
+
+### Tools Used
+
+| Tool | Purpose |
+|------|--------|
+| riscv64-unknown-elf-gcc | Compile firmware |
+| riscv64-unknown-elf-objcopy | Convert ELF to HEX |
+| iverilog | Compile RTL and testbench |
+| vvp | Run simulation |
+| gtkwave | View waveform |
+
+---
+
+### Block Verification Diagram
+
+A hand-drawn diagram was created to illustrate the verification flow:
+
+Makefile
+↓
+Firmware Compilation
+↓
+ELF Generation
+↓
+HEX Memory Image
+↓
+CPU Executes Firmware
+↓
+Hardware Block Operation
+↓
+Testbench Monitoring
+↓
+PASS / FAIL
+
+---
+
+### Conclusion
+
+In this phase, standalone verification tests were executed for multiple SoC blocks in the VSDSquadron project.
+
+The simulation environment successfully verified several blocks including GPIO Management, Memory, and SPI Master.
+
+Some tests reported timeout failures but still demonstrated the complete firmware-driven verification flow used in SoC design environments
+
+</details>
