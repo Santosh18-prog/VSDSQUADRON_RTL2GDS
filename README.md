@@ -3710,6 +3710,8 @@ The simulation successfully validates the interaction between **firmware, CPU, S
 <details>
 <summary><strong>PHASE 2 — Run All Standalone Tests </strong></summary>
 
+### Objective
+
 In this phase, standalone verification tests were executed for all hardware blocks present in the tests-standalone directory of the VSDSquadron SoC repository.
 
 Each block contains:
