@@ -3726,6 +3726,8 @@ Each block contains:
 
 The purpose of this phase is to verify individual hardware blocks by running firmware-driven simulations and observing the PASS / FAIL results.
 
+---
+
 ### Standalone Tests Directory
 
 Navigate to the standalone verification tests directory:
@@ -3743,6 +3745,8 @@ timer
 irq
 debug
 spi_master
+
+---
 
 ### Procedure Followed for Each Block
 
@@ -3773,6 +3777,8 @@ During execution the Makefile automatically performs the following tasks:
 
 ### Verification Flow
 
+
+```
 make
 ↓
 Firmware Compilation (C → ELF)
@@ -3792,6 +3798,11 @@ Hardware Block Operation
 Testbench Monitors Results
 ↓
 PASS / FAIL
+
+
+```
+
+
 
 ---
 
@@ -3877,23 +3888,6 @@ gtkwave RTL-spi_master.vcd
 
 ### Block Verification Diagram
 
-A hand-drawn diagram was created to illustrate the verification flow:
-
-Makefile
-↓
-Firmware Compilation
-↓
-ELF Generation
-↓
-HEX Memory Image
-↓
-CPU Executes Firmware
-↓
-Hardware Block Operation
-↓
-Testbench Monitoring
-↓
-PASS / FAIL
 
 ---
 
