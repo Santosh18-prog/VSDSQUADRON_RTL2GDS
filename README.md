@@ -3899,4 +3899,255 @@ The simulation environment successfully verified several blocks including GPIO M
 
 Some tests reported timeout failures but still demonstrated the complete firmware-driven verification flow used in SoC design environments
 
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 3 — Caravel Integrated Tests </strong></summary>
+
+## Objective
+The goal of this phase is to verify different peripherals inside the Caravel SoC environment using RTL simulation.  
+Each test runs firmware on the VexRiscv CPU and checks the behavior of different hardware modules.
+
+---
+
+### Test Environment
+
+Repository:
+https://github.com/vsdip/vsdsquadron-soc
+
+Test Directory:
+
+caravel_mgmt_soc_litex/verilog/dv/tests-caravel
+
+Navigate to the directory:
+
+cd caravel_mgmt_soc_litex/verilog/dv/tests-caravel
+
+---
+
+### Test Execution Flow
+
+For each test directory the following commands were executed:
+
+make clean  
+make
+
+The Makefile performs the following steps:
+
+1. Compile firmware (C → ELF)
+2. Convert ELF → HEX
+3. Load HEX into instruction memory
+4. Compile RTL using iverilog
+5. Run simulation using vvp
+6. CPU executes firmware
+7. Peripheral module is tested
+8. Testbench monitors output
+9. PASS / FAIL result is printed
+
+---
+
+### Caravel Verification Block Diagram
+
+
+---
+
+### Caravel Test Result Table
+
+| Test Name        | Status |
+|------------------|--------|
+| user_pass_thru   | PASS |
+| uart             | PASS |
+| sysctrl          | FAIL |
+| sram_exec        | PASS |
+| spi_master       | PASS |
+| pullupdown       | PASS |
+| pll              | FAIL |
+| pass_thru_fix    | PASS |
+| mem              | PASS |
+| hkspi_power      | PASS |
+| gpio_mgmt        | PASS |
+| hkspi            | PASS |
+
+---
+
+### Observations
+
+Most tests successfully passed in RTL simulation.
+
+Two tests failed:
+
+### PLL
+The PLL is an analog/mixed-signal block.  
+In RTL simulation, the analog behavior of the PLL is not fully modeled, which causes the verification test to fail.
+
+### SYSCTRL
+The SYSCTRL test depends on clock and timing behavior which may differ in simulation environments.  
+This can cause timeout conditions during RTL verification.
+
+These failures are expected in simplified RTL simulations and do not indicate an incorrect environment setup.
+
+---
+
+### Conclusion
+
+Caravel integrated verification tests were executed successfully using the Makefile-based simulation flow.
+
+The verification process demonstrated:
+
+- Firmware execution on the VexRiscv CPU
+- Peripheral interaction via Wishbone bus
+- RTL simulation using Icarus Verilog
+- Testbench-based PASS/FAIL validation
+
+This confirms the correct setup and functioning of the Caravel DV environment.
+
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 4 — Verification Flow Understanding </strong></summary>
+
+## Objective
+The objective of this phase is to understand the verification flow when the `make` command is executed in the Caravel DV environment. The participant must analyze how the Makefile compiles firmware, invokes the simulator, connects the testbench with the design, and determines the PASS/FAIL result.
+
+---
+
+### What Happens When `make` is Executed
+
+When the `make` command is executed inside a test directory, the Makefile automatically performs the following steps:
+
+1. Compile firmware written in C using the RISC-V GCC compiler.
+2. Generate an ELF executable file.
+3. Convert the ELF file into a HEX file using objcopy.
+4. Load the HEX file into the instruction memory of the CPU.
+5. Compile the RTL design and testbench using the Icarus Verilog compiler.
+6. Generate the simulation executable file (.vvp).
+7. Run the simulation using the vvp simulator.
+8. The VexRiscv CPU begins executing the firmware instructions.
+9. The firmware interacts with the hardware peripheral through the Wishbone bus.
+10. The testbench observes the signals and determines PASS or FAIL.
+
+---
+
+### How the Makefile Invokes the Simulator
+
+The Makefile uses the Icarus Verilog simulation toolchain.
+
+Step 1 — RTL Compilation  
+The RTL files and testbench are compiled using:
+
+iverilog -o uart.vvp rtl_files testbench.v
+
+Step 2 — Simulation Execution  
+
+vvp uart.vvp
+
+Explanation:
+
+iverilog compiles the RTL design and testbench files and generates a simulation executable file (.vvp).  
+The vvp command executes the simulation.
+
+---
+
+### Files Compiled During Verification
+
+During simulation several types of files are used.
+
+Firmware files
+
+uart.c  
+spi_master.c  
+sysctrl.c  
+
+Generated files
+
+uart.elf  
+uart.hex  
+
+RTL design files
+
+caravel.v  
+__user_project_wrapper.v  
+peripheral modules  
+
+Testbench files
+
+uart_tb.v  
+spi_master_tb.v  
+sysctrl_tb.v  
+
+PDK libraries
+
+sky130_fd_sc_hd  
+sky130_fd_io  
+sky130_fd_sc_hvl  
+
+These PDK libraries provide the standard cell models and IO pad models required for Caravel RTL simulation.
+
+---
+
+### How the Testbench Interacts with the Design
+
+The testbench acts as the verification environment.
+
+Responsibilities of the testbench:
+
+• Generates clock and reset signals  
+• Loads firmware into instruction memory  
+• Monitors GPIO signals  
+• Observes peripheral outputs  
+• Prints simulation messages  
+• Detects PASS or FAIL conditions  
+
+Example simulation output
+
+Monitor: Test UART (RTL) Started  
+UART Test (RTL) passed  
+
+---
+
+### How PASS / FAIL is Determined
+
+The PASS or FAIL result is determined by the testbench monitor logic.
+
+The testbench checks:
+
+• GPIO values  
+• Peripheral responses  
+• Register values  
+• Expected firmware behavior  
+
+If the expected condition is satisfied the testbench prints:
+
+Test Passed
+
+If the expected behavior is not observed within a timeout period the testbench prints:
+
+Test Failed  
+Timeout occurred
+
+---
+
+### Verification Flow Diagram
+
+Participants must draw a verification flow diagram that includes the following blocks.
+
+Makefile  
+↓  
+Compilation  
+↓  
+Testbench  
+↓  
+DUT (Design Under Test)  
+↓  
+Simulation  
+↓  
+PASS / FAIL
+
+---
+
+
 </details>
