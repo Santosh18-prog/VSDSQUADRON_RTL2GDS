@@ -3915,25 +3915,26 @@ Each test runs firmware on the VexRiscv CPU and checks the behavior of different
 ### Test Environment
 
 Repository:
+```
 https://github.com/vsdip/vsdsquadron-soc
-
+```
 Test Directory:
-
+```
 caravel_mgmt_soc_litex/verilog/dv/tests-caravel
-
+```
 Navigate to the directory:
-
+```
 cd caravel_mgmt_soc_litex/verilog/dv/tests-caravel
-
+```
 ---
 
 ### Test Execution Flow
 
 For each test directory the following commands were executed:
-
+```
 make clean  
 make
-
+```
 The Makefile performs the following steps:
 
 1. Compile firmware (C → ELF)
@@ -4038,13 +4039,13 @@ The Makefile uses the Icarus Verilog simulation toolchain.
 
 Step 1 — RTL Compilation  
 The RTL files and testbench are compiled using:
-
+```
 iverilog -o uart.vvp rtl_files testbench.v
-
+```
 Step 2 — Simulation Execution  
-
+```
 vvp uart.vvp
-
+```
 Explanation:
 
 iverilog compiles the RTL design and testbench files and generates a simulation executable file (.vvp).  
@@ -4058,37 +4059,41 @@ During simulation several types of files are used.
 
 Firmware files
 
-'''bash
+```
 
 uart.c  
 spi_master.c  
 sysctrl.c 
 
-'''
+```
 
 Generated files
+
+```
 
 uart.elf  
 uart.hex  
 
-RTL design files
+```
 
+RTL design files
+```
 caravel.v  
 __user_project_wrapper.v  
 peripheral modules  
-
+```
 Testbench files
-
+```
 uart_tb.v  
 spi_master_tb.v  
 sysctrl_tb.v  
-
+```
 PDK libraries
-
+```
 sky130_fd_sc_hd  
 sky130_fd_io  
 sky130_fd_sc_hvl  
-
+```
 These PDK libraries provide the standard cell models and IO pad models required for Caravel RTL simulation.
 
 ---
@@ -4107,10 +4112,10 @@ Responsibilities of the testbench:
 • Detects PASS or FAIL conditions  
 
 Example simulation output
-
+```
 Monitor: Test UART (RTL) Started  
 UART Test (RTL) passed  
-
+```
 ---
 
 ### How PASS / FAIL is Determined
@@ -4125,9 +4130,9 @@ The testbench checks:
 • Expected firmware behavior  
 
 If the expected condition is satisfied the testbench prints:
-
+```
 Test Passed
-
+```
 If the expected behavior is not observed within a timeout period the testbench prints:
 
 Test Failed  
