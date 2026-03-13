@@ -4058,9 +4058,13 @@ During simulation several types of files are used.
 
 Firmware files
 
+'''bash
+
 uart.c  
 spi_master.c  
-sysctrl.c  
+sysctrl.c 
+
+'''
 
 Generated files
 
