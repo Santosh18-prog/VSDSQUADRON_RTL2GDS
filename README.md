@@ -3674,7 +3674,7 @@ Signals observed include:
 
 ### Verification Flow Diagram
 
-![spi](WEEK-3/Phase1/spi_flow.jpeg)
+![spi](WEEK-3/Phase1/spi_flow.png)
 
 ---
 
