@@ -4164,9 +4164,7 @@ The documentation includes:
 
 - Verification flow explanation
 
-- Block diagrams illustrating the verification architecture
-
-- Screenshots of simulation outputs
+- Screenshots of outputs
 
 ### Repository structure:
 ```bash
