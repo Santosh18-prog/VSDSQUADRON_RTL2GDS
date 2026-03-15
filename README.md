@@ -4158,15 +4158,15 @@ This repository contains the documentation and results for Week-3 verification t
 
 The documentation includes:
 
-. Execution steps for standalone and Caravel tests
+- Execution steps for standalone and Caravel tests
 
-. Simulation results and PASS/FAIL tables
+- Simulation results and PASS/FAIL tables
 
-. Verification flow explanation
+- Verification flow explanation
 
-. Block diagrams illustrating the verification architecture
+- Block diagrams illustrating the verification architecture
 
-. Screenshots of simulation outputs
+- Screenshots of simulation outputs
 
 ### Repository structure:
 ```bash
