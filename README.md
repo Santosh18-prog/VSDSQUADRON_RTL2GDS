@@ -4135,7 +4135,7 @@ Timeout occurred
 
 ### Verification Flow Diagram
 
-![flow](WEEK-3/Phase3/caravel_test.png)
+![flow](WEEK-3/Phase4/caravel_test.png)
 
 ### Conclusion
 
