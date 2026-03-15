@@ -3674,29 +3674,7 @@ Signals observed include:
 
 ### Verification Flow Diagram
 
-```
-Firmware (spi_master.c)
-        ↓
-RISC-V Compiler
-        ↓
-spi_master.elf
-        ↓
-ELF → HEX Conversion
-        ↓
-spi_master.hex loaded into memory
-        ↓
-VexRiscv CPU executes firmware
-        ↓
-CPU configures SPI registers
-        ↓
-SPI Master hardware performs transfer
-        ↓
-SPI Flash Model responds
-        ↓
-Testbench validates data
-        ↓
-PASS / FAIL
-```
+![spi](WEEK-3/Phase1/spi_flow.jpeg)
 
 ---
 
@@ -3779,32 +3757,7 @@ During execution the Makefile automatically performs the following tasks:
 
 ### Verification Flow
 
-
-```
-make
-↓
-Firmware Compilation (C → ELF)
-↓
-ELF → HEX Conversion
-↓
-HEX loaded into Flash Memory
-↓
-RTL + Testbench Compilation (iverilog)
-↓
-Simulation Execution (vvp)
-↓
-CPU Executes Firmware Instructions
-↓
-Hardware Block Operation
-↓
-Testbench Monitors Results
-↓
-PASS / FAIL
-
-
-```
-
-
+![flow](WEEK-3/Phase2/standalone.png)
 
 ---
 
@@ -3894,10 +3847,6 @@ gtkwave RTL-spi_master.vcd
 
 ---
 
-### Block Verification Diagram
-
-
----
 
 ### Conclusion
 
@@ -4186,19 +4135,7 @@ Timeout occurred
 
 ### Verification Flow Diagram
 
-Participants must draw a verification flow diagram that includes the following blocks.
-
-Makefile  
-↓  
-Compilation  
-↓  
-Testbench  
-↓  
-DUT (Design Under Test)  
-↓  
-Simulation  
-↓  
-PASS / FAIL
+![flow](WEEK-3/Phase3/caravel_test.png)
 
 ---
 
