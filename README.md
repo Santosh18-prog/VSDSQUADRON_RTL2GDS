@@ -4137,6 +4137,14 @@ Timeout occurred
 
 ![flow](WEEK-3/Phase3/caravel_test.png)
 
+### Conclusion
+
+In this phase, the internal verification flow of the Caravel DV environment was analyzed by observing the operations triggered when the make command is executed.
+
+The study showed how the Makefile automates the complete verification process, including firmware compilation, ELF to HEX conversion, RTL compilation, and simulation execution. The firmware runs on the VexRiscv CPU, interacts with hardware peripherals through the Wishbone bus, and the testbench monitors the system behavior to determine PASS or FAIL results.
+
+This phase helped in understanding the integration between firmware, hardware RTL, simulation tools, and verification logic, which is a key concept in SoC design verification workflows.
+
 ---
 
 
