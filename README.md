@@ -4167,14 +4167,14 @@ The documentation includes:
 . Screenshots of simulation outputs
 
 ### Repository structure:
-
+```bash
 WEEK-3/
  ├── Phase1
  ├── Phase2
  ├── Phase3
  ├── Phase4
 README.md
-
+```
 This documentation demonstrates the verification workflow used in the Caravel DV environment.
 
 </details>
