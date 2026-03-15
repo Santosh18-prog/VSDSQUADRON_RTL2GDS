@@ -3569,6 +3569,8 @@ Monitor: Test SPI Master (RTL) Passed
 
 ### Result
 
+![spi](WEEK-3/Phase1/spi.jpeg)
+
 **SPI Master Test Status:**
 
 PASS
@@ -3808,11 +3810,17 @@ PASS / FAIL
 
 ### Standalone Test Results
 
+![gpio](WEEK-3/Phase2/gpio.jpeg)
+![mem](WEEK-3/Phase2/mem.jpeg)
+![timer](WEEK-3/Phase2/timer.jpeg)
+![irq](WEEK-3/Phase2/irq.jpeg)
+![debug](WEEK-3/Phase2/debug.jpeg)
+![spi](WEEK-3/Phase2/spi.jpeg)
+
 | Standalone Test | Status (sky130) |
 |-----------------|----------------|
 | GPIO Mgmt       | PASS           |
 | MEM             | PASS           |
-| UART            | Not Executed   |
 | TIMER           | FAIL           |
 | IRQ             | FAIL           |
 | DEBUG           | FAIL           |
@@ -3955,6 +3963,42 @@ The Makefile performs the following steps:
 ---
 
 ### Caravel Test Result Table
+
+### 1. USER_PASS_THR
+![user_pass_thru](WEEK-3/Phase3/user_pass_thru.jpeg)
+
+### 2. UART
+![uart](WEEK-3/Phase3/uart.jpeg)
+
+### 3. SYSCTRL
+![sysctrl](WEEK-3/Phase3/sysctrl.jpeg)
+
+### 4. SRAM_EXEC
+![sram_exec](WEEK-3/Phase3/sram_exec.jpeg)
+
+### 5. SPI_MASTER
+![spi](WEEK-3/Phase3/spi_master.jpeg)
+
+### 6. PULLUPDOWN
+![pullupdown](WEEK-3/Phase3/pullupdown.jpeg)
+
+### 7. PLL
+![PLL](WEEK-3/Phase3/pll.jpeg)
+
+### 8. PASS_THRU_FIX
+![pass_thru_fix](WEEK-3/Phase3/pass_thru_fix.jpeg)
+
+### 8. MEM
+![MEM](WEEK-3/Phase3/mem.jpeg)
+
+### 9. HKSPI_MASTER
+![hkspi_power](WEEK-3/Phase3/hkspi_power.jpeg)
+
+### 10. GPIO_MGMT
+![gpio_mgmt](WEEK-3/Phase3/gpio.jpeg)
+
+### 11. HKSPI
+![hkspi](WEEK-3/Phase3/hkspi.jpeg)
 
 | Test Name        | Status |
 |------------------|--------|
