@@ -4147,5 +4147,34 @@ This phase helped in understanding the integration between firmware, hardware RT
 
 ---
 
+</details>
+
+<details>
+<summary><strong>PHASE 5 — Documentation </strong></summary>
+
+This repository contains the documentation and results for Week-3 verification tasks.
+
+The documentation includes:
+
+. Execution steps for standalone and Caravel tests
+
+. Simulation results and PASS/FAIL tables
+
+. Verification flow explanation
+
+. Block diagrams illustrating the verification architecture
+
+. Screenshots of simulation outputs
+
+### Repository structure:
+
+WEEK-3/
+ ├── Phase1
+ ├── Phase2
+ ├── Phase3
+ ├── Phase4
+README.md
+
+This documentation demonstrates the verification workflow used in the Caravel DV environment.
 
 </details>
