@@ -4152,6 +4152,8 @@ This phase helped in understanding the integration between firmware, hardware RT
 <details>
 <summary><strong>PHASE 5 — Documentation </strong></summary>
 
+---
+
 This repository contains the documentation and results for Week-3 verification tasks.
 
 The documentation includes:
