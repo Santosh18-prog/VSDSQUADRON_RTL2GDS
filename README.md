@@ -4839,12 +4839,6 @@ results/sky130hd/user_project_wrapper/base/5_route.odb
 
 * Fill insertion stage
 
-**Command:**
-
-```bash id="f9g2v0"
-make fill
-```
-
 **Location:**
 
 ```text id="9pkc1b"
