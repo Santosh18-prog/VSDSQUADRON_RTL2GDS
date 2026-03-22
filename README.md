@@ -4300,7 +4300,7 @@ This step ensures correct setup for the RTL-to-GDS flow in later phases.
 </details>
 
 <details>
-<summary><strong>PHASE-2 ORFS Design Environment Setup</strong></summary>
+<summary><strong>PHASE 2 — Prepare the ORFS Design Environment</strong></summary>
 
 ## Objective
 The objective of Phase-2 is to set up the OpenROAD Flow Scripts (ORFS) environment for the `user_project_wrapper` design. This includes organizing the design workspace, integrating RTL sources, configuring design parameters, and linking timing constraints to enable a smooth RTL-to-GDS flow.
@@ -4519,7 +4519,7 @@ This step ensures that the design is evaluated and optimized based on the requir
 
 ---
 
-## 🚀 Project Overview
+## Project Overview
 
 This project implements the complete **RTL-to-GDSII physical design flow** for the `user_project_wrapper` module using the **OpenROAD Flow Scripts (ORFS)** on the **SKY130HD** technology.
 
@@ -4529,11 +4529,11 @@ The objective is to successfully execute all backend stages and analyze design b
 
 ## 🧠 Design Architecture
 
-### 🔹 Top Module
+###  Top Module
 
 * `user_project_wrapper`
 
-### 🔹 Key Interfaces
+###  Key Interfaces
 
 * **Wishbone Slave Interface** → CPU communication
 * **GPIO Interface** → External IO interaction
@@ -4744,7 +4744,7 @@ This phase focuses on collecting key artifacts generated during the RTL-to-GDS f
 
 ---
 
-### 🔹 1. Synthesized Netlist
+###  1. Synthesized Netlist
 
 **Purpose:**
 
@@ -4769,7 +4769,7 @@ results/sky130hd/user_project_wrapper/base/1_1_yosys.v
 
 ---
 
-### 🔹 2. Final Netlist (Post-Implementation)
+###  2. Final Netlist (Post-Implementation)
 
 **Purpose:**
 
@@ -4795,7 +4795,7 @@ results/sky130hd/user_project_wrapper/base/
 
 ---
 
-### 🔹 3. Routed Database (.odb)
+###  3. Routed Database (.odb)
 
 **Purpose:**
 
@@ -4820,7 +4820,7 @@ results/sky130hd/user_project_wrapper/base/5_route.odb
 
 ---
 
-### 🔹 4. Final Filled Database
+###  4. Final Filled Database
 
 **Purpose:**
 
@@ -4845,7 +4845,7 @@ results/sky130hd/user_project_wrapper/base/6_fill.odb
 
 ---
 
-### 🔹 5. GDSII (Final Layout)
+###  5. GDSII (Final Layout)
 
 **Purpose:**
 
@@ -4870,7 +4870,7 @@ results/sky130hd/user_project_wrapper/base/*.gds
 
 ---
 
-### 🔹 6. Timing Report
+### 6. Timing Report
 
 **Purpose:**
 
