@@ -4349,11 +4349,7 @@ The following RTL files are included:
 
 - `user_project_wrapper.v` → Top-level module  
 - `debug_regs.v` → Debug register module  
-- `defines.v` → Caravel global macro definitions  
 
-The `defines.v` file is required to resolve platform-specific macros such as:
-- `MPRJ_IO_PADS`
-- `ANALOG_PADS`
 
 ---
 
