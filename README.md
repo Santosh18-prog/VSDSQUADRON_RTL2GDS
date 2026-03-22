@@ -4245,7 +4245,9 @@ Instantiated only when GPIO_TESTING is enabled.
 3. user_project_la_example (optional)  
 Instantiated only when LA_TESTING is enabled.
 
-## 5. Dependency Tree
+## 5. Dependency Tree\
+
+```
 user_project_wrapper  
 │  
 ├── debug_regs  
@@ -4253,7 +4255,7 @@ user_project_wrapper
 ├── user_project_gpio_example (optional)  
 │  
 └── user_project_la_example (optional)  
-
+```
 ## 6. RTL Files Required
 The following RTL files are required for synthesis:
 
@@ -4264,13 +4266,13 @@ The following RTL files are required for synthesis:
 
 ## 7. Compilation Dependencies
 The modules must be compiled in the following order:
-
+```
 debug_regs.v  
 user_project_gpio_example.v (optional)  
 user_project_la_example.v (optional)  
 ↓  
 user_project_wrapper.v  
-
+```
 The wrapper depends on the lower-level modules.
 
 ## 8. Address Space Organization
