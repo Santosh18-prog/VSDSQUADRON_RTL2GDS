@@ -4183,7 +4183,6 @@ This documentation demonstrates the verification workflow used in the Caravel DV
 
 ## WEEK–4 (RTL-to-GDS Implementation of User Project Wrapper)
 
----
 
 <details>
 <summary><strong>PHASE 1 — Analyze the Top-Level Wrapper</strong></summary>
