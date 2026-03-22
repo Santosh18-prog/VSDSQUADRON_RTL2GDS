@@ -4906,6 +4906,11 @@ logs/sky130hd/user_project_wrapper/base/
 reports/sky130hd/user_project_wrapper/base/
 ```
 
+## Evidence
+
+![report](WEEK-4/Phase5/report.jpeg)
+![result](WEEK-4/Phase5/result.jpeg)
+
 ---
 
 ## 🧠 Summary
@@ -4921,7 +4926,7 @@ reports/sky130hd/user_project_wrapper/base/
 
 ---
 
-## ✅ Insight
+## Insight
 
 * Each stage produces artifacts required for downstream verification
 * Proper tracking of outputs ensures **traceability and validation**
