@@ -4331,8 +4331,7 @@ user_project_wrapper/
 ├── constraint.sdc
 └── rtl/
     ├── user_project_wrapper.v
-    ├── debug_regs.v
-    └── defines.v
+    └── debug_regs.v
 ```
 
 ![DIR](WEEK-4/Phase2/dir.jpeg)
@@ -4541,7 +4540,7 @@ The objective is to successfully execute all backend stages and analyze design b
 * **Logic Analyzer Interface (128-bit)** → Debug visibility
 * **Interrupts (3-bit)** → Event signaling
 
-### 🔹 Internal Modules
+### Internal Modules
 
 * `debug_regs` → Memory-mapped debug registers
 * Optional modules (conditional):
@@ -4549,7 +4548,7 @@ The objective is to successfully execute all backend stages and analyze design b
   * GPIO testing module
   * Logic analyzer module
 
-### 🔹 Architectural Insight
+### Architectural Insight
 
 The design is **IO-dominated**, meaning:
 
@@ -4564,7 +4563,7 @@ The design is **IO-dominated**, meaning:
 
 ---
 
-## ⚙️ Configuration Strategy
+## Configuration Strategy
 
 ### Key Parameters (config.mk)
 
@@ -4738,10 +4737,10 @@ The design meets timing, routing, and layout requirements under SKY130HD technol
 </details>
 
 <details>
-<summary><strong>PHASE 6 — Debugging and Issue Resolutiont</strong></summary>
-## 📦 Phase 5 — Outputs for Gate-Level Verification Preparation
+<summary><strong>PHASE 5 — Outputs for Gate-Level Verification Preparation</strong></summary>
 
-This phase focuses on collecting key artifacts generated during the RTL-to-GDS flow. These outputs are essential for verification, analysis, and final tapeout readiness.
+## Objective
+The objective this phase is to focuses on collecting key artifacts generated during the RTL-to-GDS flow. These outputs are essential for verification, analysis, and final tapeout readiness.
 
 ---
 
