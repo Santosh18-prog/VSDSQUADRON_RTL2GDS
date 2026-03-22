@@ -4597,7 +4597,7 @@ make finish
 
 This diagram represents the complete OpenROAD flow executed in this project, including synthesis, floorplanning, placement, CTS, routing, and final signoff with actual design metrics.
 
-![flow](WEEK-4/Phase4/result.jpeg)
+![flow](WEEK-4/Phase4/result.png)
 
 ---
 
