@@ -4331,7 +4331,8 @@ user_project_wrapper/
 ├── constraint.sdc
 └── rtl/
     ├── user_project_wrapper.v
-    └── debug_regs.v
+    ├── debug_regs.v
+    └── defines.v
 ```
 
 ![DIR](WEEK-4/Phase2/dir.jpeg)
@@ -4349,8 +4350,16 @@ The following RTL files are included:
 
 - `user_project_wrapper.v` → Top-level module  
 - `debug_regs.v` → Debug register module  
+- `defines.v` → Global macro definitions (Caravel platform)
 
+### Role of defines.v
 
+This file provides platform-specific macros such as:
+
+MPRJ_IO_PADS
+ANALOG_PADS
+
+These macros are required for correct synthesis and interface mapping.
 ---
 
 ## 4. Configuration File (config.mk)
