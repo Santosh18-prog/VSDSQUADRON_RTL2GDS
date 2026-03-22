@@ -4380,7 +4380,7 @@ The ORFS flow uses the configuration file to:
 - Identify the top module (`user_project_wrapper`)  
 - Compile all RTL source files  
 - Resolve module dependencies
-- 
+  
 Using wildcard inclusion ensures all required files, including macro definitions, are included.
 
 ---
