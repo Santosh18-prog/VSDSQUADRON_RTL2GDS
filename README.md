@@ -4941,8 +4941,55 @@ reports/sky130hd/user_project_wrapper/base/
 <summary><strong>PHASE 6 — Debugging and Issue Resolutiont</strong></summary>
 
   ---
-  
-### 🔴 1. Floorplanning Issue: Improper CORE_AREA and DIE_AREA Usage
+
+
+### 🔴 1. Synthesis Failure
+
+**What went wrong:**
+
+* Synthesis failed due to missing top module
+
+**Error:**
+
+```
+Module `user_project_wrapper` not found
+```
+
+**How it was identified:**
+
+* Yosys error during synthesis stage
+* No netlist generated
+
+**Root Cause:**
+
+* Incorrect RTL file path in `VERILOG_FILES`
+
+```
+export VERILOG_FILES = $(sort $(wildcard $(DESIGN_HOME)/$(PLATFORM)/$(DESIGN_NAME)/src/*.v))
+
+```
+
+**Fix Applied:**
+
+* Corrected RTL file paths in configuration
+
+```
+export VERILOG_FILES = $(sort $(wildcard $(DESIGN_HOME)/$(PLATFORM)/$(DESIGN_NAME)/rtl/*.v))
+
+```
+
+**Result:**
+
+* Synthesis completed successfully
+* Netlist generated correctly
+
+**Insight:**
+
+* Proper RTL inclusion is critical
+* Incorrect file paths can completely break the flow
+
+---
+### 🔴 2. Floorplanning Issue: Improper CORE_AREA and DIE_AREA Usage
 
 **What went wrong:**
 
@@ -4975,9 +5022,19 @@ reports/sky130hd/user_project_wrapper/base/
 * Utilization-driven sizing is preferred for IO-heavy designs
 * Over-constraining floorplan parameters leads to inefficient layouts
 
+## LAYOUT 
+
+### Before
+
+![bad](WEEK-4/Phase6/bad.jpeg)
+
+### After
+
+![LAYOUT](WEEK-4/Phase6/layout.jpeg)
+
 ---
 
-### 🔴 2. IO Pin Overflow Error
+### 🔴 3. IO Pin Overflow Error
 
 **What went wrong:**
 
@@ -5009,49 +5066,22 @@ Number of IO pins (637) exceeds available positions (636)
 * IO placement completed successfully
 * Pins distributed evenly across die boundary
 
+### 📸 IO Pin Distribution (Before vs After)
+
+![IO Overflow](WEEK-4/Phase6/io_error.png)
+
+**Figure:** IO pin overflow observed at higher utilization (19%) due to insufficient die boundary. Reducing utilization to 18% increased die size, enabling proper IO placement and uniform pin distribution.
+
 **Insight:**
 
 * This is a classic **IO-limited design problem**
 * IO count directly determines minimum die size
 
----
 
-### 🔴 3. Synthesis Failure
-
-**What went wrong:**
-
-* Synthesis failed due to missing top module
-
-**Error:**
-
-```
-Module `user_project_wrapper` not found
-```
-
-**How it was identified:**
-
-* Yosys error during synthesis stage
-* No netlist generated
-
-**Root Cause:**
-
-* Incorrect RTL file path in `VERILOG_FILES`
-
-**Fix Applied:**
-
-* Corrected RTL file paths in configuration
-
-**Result:**
-
-* Synthesis completed successfully
-* Netlist generated correctly
-
-**Insight:**
-
-* Proper RTL inclusion is critical
-* Incorrect file paths can completely break the flow
 
 ---
+
+
 
 ### 🔴 4. Placement Behavior During CTS
 
@@ -5126,5 +5156,7 @@ Module `user_project_wrapper` not found
 * OpenROAD flow is dependency-driven
 * Debugging logs is essential for identifying root causes
 * Most physical design issues arise from constraints, not RTL
+
+---
 
 </details>
