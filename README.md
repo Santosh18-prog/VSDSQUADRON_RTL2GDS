@@ -4335,7 +4335,7 @@ user_project_wrapper/
     └── defines.v
 ```
 
-![DIR](WEEK-4/Phase2/dir.jpeg)
+![DIR](WEEK-4/Phase2/DIR.jpeg)
 
 ### Description:
 - `config.mk` → Design configuration and flow parameters  
