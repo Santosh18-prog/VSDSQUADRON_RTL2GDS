@@ -4609,7 +4609,8 @@ make finish
 
 ### EVIDENCE
 
-![SYNTH](WEEK-4/Phase4/Synth.jpeg)
+![SYNTH](WEEK-4/Phase4/synth.jpeg)
+![SYNTH](WEEK-4/Phase4/synth1.jpeg)
 
 ---
 
@@ -4670,6 +4671,7 @@ Includes:
 
 ### EVIDENCE
 
+![cts](WEEK-4/Phase4/cts1.jpeg)
 ![cts](WEEK-4/Phase4/cts.jpeg)
 
 ---
@@ -4695,12 +4697,16 @@ Includes:
 * Dummy metal added
 * Ensures manufacturing density compliance
 
+![fill](WEEK-4/Phase4/fill.jpeg)
+
 ---
 
 ### 7. Final Database & GDS
 
 * `.odb` → final database
 * `.gds` → layout file
+
+![gds](WEEK-4/Phase4/layout.jpeg)
 
 ---
 
@@ -4711,6 +4717,8 @@ Includes:
 **Result:**
 
 * No setup/hold violations
+
+![report](WEEK-4/Phase4/report.jpeg)
 
 ---
 
