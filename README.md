@@ -4527,7 +4527,7 @@ The objective is to successfully execute all backend stages and analyze design b
 
 ---
 
-## 🧠 Design Architecture
+## Design Architecture
 
 ###  Top Module
 
@@ -4594,6 +4594,10 @@ make finish
 ---
 
 ## 📊 Flow Stages and Technical Insights
+
+This diagram represents the complete OpenROAD flow executed in this project, including synthesis, floorplanning, placement, CTS, routing, and final signoff with actual design metrics.
+
+![flow](WEEK-4/Phase4/result.jpeg)
 
 ---
 
@@ -4734,7 +4738,7 @@ Buffers (CTS)      : ~9+
 
 ---
 
-## ✅ Conclusion
+## Conclusion
 
 The RTL-to-GDS flow was successfully completed for the `user_project_wrapper` design. All stages executed correctly, and physical design challenges such as IO overflow were resolved through proper configuration and analysis.
 
