@@ -4938,7 +4938,7 @@ reports/sky130hd/user_project_wrapper/base/
 
 
 <details>
-<summary><strong>PHASE 6 — Debugging and Issue Resolutiont</strong></summary>
+<summary><strong>PHASE 6 — Debugging and Issue Resolution</strong></summary>
 
   ---
 
