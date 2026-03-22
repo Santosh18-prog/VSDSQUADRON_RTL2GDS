@@ -4178,3 +4178,936 @@ README.md
 This documentation demonstrates the verification workflow used in the Caravel DV environment.
 
 </details>
+
+---
+
+## WEEK–4 (RTL-to-GDS Implementation of User Project Wrapper)
+
+---
+
+<details>
+<summary><strong>PHASE 1 — Analyze the Top-Level Wrapper</strong></summary>
+
+## Objective
+The objective of Phase-1 is to analyze the user_project_wrapper module, identify all instantiated modules, trace the design hierarchy, and determine the required RTL files for compilation.
+
+## 1. Top Module Identification
+The top-level module of the design is:
+user_project_wrapper
+
+This module acts as an interface between the user project and the Caravel SoC. It connects the design to the Wishbone bus, GPIO pins, logic analyzer signals, and interrupt outputs.
+
+## 2. Interface Overview
+
+### Wishbone Bus Interface
+Used for communication between CPU and user logic.
+
+- wb_clk_i → Clock input  
+- wb_rst_i → Reset input  
+- wbs_stb_i, wbs_cyc_i, wbs_we_i → Control signals  
+- wbs_dat_i, wbs_adr_i → Input data and address  
+- wbs_ack_o, wbs_dat_o → Output response  
+
+### GPIO Interface
+- io_in → Input pins  
+- io_out → Output pins  
+- io_oeb → Output enable  
+
+Used for interaction with external devices.
+
+### Logic Analyzer Interface
+- la_data_in  
+- la_data_out  
+- la_oenb  
+
+Used for internal debugging and signal observation.
+
+### Interrupt Interface
+- user_irq  
+
+Used to send interrupt signals to the processor.
+
+## 3. Clock and Reset
+- Clock: wb_clk_i  
+- Reset: wb_rst_i  
+
+Target clock frequency: 100 MHz  
+Clock period: 10 ns  
+
+## 4. Module Instantiations
+The following modules are instantiated inside the wrapper:
+
+1. debug_regs  
+This module implements debug registers accessible via the Wishbone interface.
+
+2. user_project_gpio_example (optional)  
+Instantiated only when GPIO_TESTING is enabled.
+
+3. user_project_la_example (optional)  
+Instantiated only when LA_TESTING is enabled.
+
+## 5. Dependency Tree
+user_project_wrapper  
+│  
+├── debug_regs  
+│  
+├── user_project_gpio_example (optional)  
+│  
+└── user_project_la_example (optional)  
+
+## 6. RTL Files Required
+The following RTL files are required for synthesis:
+
+- user_project_wrapper.v  
+- debug_regs.v  
+- user_project_gpio_example.v (optional)  
+- user_project_la_example.v (optional)  
+
+## 7. Compilation Dependencies
+The modules must be compiled in the following order:
+
+debug_regs.v  
+user_project_gpio_example.v (optional)  
+user_project_la_example.v (optional)  
+↓  
+user_project_wrapper.v  
+
+The wrapper depends on the lower-level modules.
+
+## 8. Address Space Organization
+The Wishbone address space is divided into:
+
+- User address space  
+- Debug address space  
+
+The debug registers occupy the last portion of the address space.
+
+## 9. Block Diagram
+
+![WRAPPER](WEEK-4/Phase1/wrapper.png)
+
+## 10. Summary
+Phase-1 involves:
+- Understanding the wrapper module  
+- Identifying all instantiated modules  
+- Tracing the design hierarchy  
+- Listing required RTL files  
+- Defining compilation dependencies  
+
+This step ensures correct setup for the RTL-to-GDS flow in later phases.
+
+
+</details>
+
+<details>
+<summary><strong>PHASE-2 ORFS Design Environment Setup</strong></summary>
+
+## Objective
+The objective of Phase-2 is to set up the OpenROAD Flow Scripts (ORFS) environment for the `user_project_wrapper` design. This includes organizing the design workspace, integrating RTL sources, configuring design parameters, and linking timing constraints to enable a smooth RTL-to-GDS flow.
+
+---
+
+## 1. Design Workspace Preparation
+
+A dedicated design directory is created inside the ORFS flow:
+
+```
+orfs/flow/designs/sky130hd/user_project_wrapper/
+```
+
+This directory contains all required files for synthesis, placement, and routing.
+
+---
+
+## 2. Directory Structure
+
+The directory structure is organized as follows:
+
+```
+user_project_wrapper/
+│
+├── config.mk
+├── constraint.sdc
+└── rtl/
+    ├── user_project_wrapper.v
+    ├── debug_regs.v
+    └── defines.v
+```
+
+![DIR](WEEK-4/Phase2/dir.jpeg)
+
+### Description:
+- `config.mk` → Design configuration and flow parameters  
+- `constraint.sdc` → Timing constraints  
+- `rtl/` → RTL source files  
+
+---
+
+## 3. RTL Integration
+
+The following RTL files are included:
+
+- `user_project_wrapper.v` → Top-level module  
+- `debug_regs.v` → Debug register module  
+- `defines.v` → Caravel global macro definitions  
+
+The `defines.v` file is required to resolve platform-specific macros such as:
+- `MPRJ_IO_PADS`
+- `ANALOG_PADS`
+
+---
+
+## 4. Configuration File (config.mk)
+
+The `config.mk` file defines the design setup for the ORFS flow.
+
+![config](WEEK-4/Phase2/config.jpeg)
+
+---
+
+
+## 5. Internal Design Behavior
+
+The `user_project_wrapper` includes internal logic for:
+
+- Address decoding to separate user and debug address spaces  
+- Multiplexing of output signals (`wbs_dat_o`, `wbs_ack_o`) based on address selection  
+
+This ensures correct routing of data between the Wishbone interface and internal modules.
+
+---
+
+## 6. Compilation Setup
+
+The ORFS flow uses the configuration file to:
+
+- Identify the top module (`user_project_wrapper`)  
+- Compile all RTL source files  
+- Resolve module dependencies
+- 
+Using wildcard inclusion ensures all required files, including macro definitions, are included.
+
+---
+
+## 7. Synthesis Readiness
+
+At the end of Phase-2:
+
+- The design workspace is properly structured  
+- All RTL files are integrated  
+- Configuration parameters are set  
+- Timing constraints are defined  
+- Macros and dependencies are resolved  
+
+The design is now ready for the next stages of the RTL-to-GDS flow.
+
+---
+
+## 8. Summary
+
+Phase-2 involves:
+
+- Preparing the ORFS design workspace  
+- Creating the required directory structure  
+- Integrating RTL files  
+- Configuring design parameters in `config.mk`  
+- Ensuring synthesis readiness  
+
+This phase ensures the design is correctly prepared for further physical design stages.
+
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 3 — Apply 100 MHz Clock Constraint</strong></summary>
+
+## Objective
+The objective of Phase-3 is to define and apply the clock constraint for the design. This enables timing-driven synthesis and ensures that the design meets the required operating frequency.
+
+---
+
+## 1. Clock Identification
+
+The clock signal is identified from the top-level module `user_project_wrapper`.
+
+From the RTL:
+
+input wb_clk_i
+
+The signal `wb_clk_i` serves as the primary clock input and drives all synchronous elements in the design through the Wishbone interface.
+
+---
+
+## 2. Clock Constraint Definition
+
+The clock constraint is defined in the Synopsys Design Constraints (SDC) file as:
+
+create_clock -name wb_clk_i -period 10 [get_ports wb_clk_i]
+
+This constraint specifies the clock characteristics for timing analysis.
+
+---
+
+## 3. Constraint File
+
+- File: `constraint.sdc`
+
+Content:
+
+create_clock -name wb_clk_i -period 10 [get_ports wb_clk_i]
+
+![Constraint](WEEK-4/Phase3/constraint.jpeg)
+
+---
+
+## 4. Explanation of Constraint
+
+- `create_clock` → Defines a clock for timing analysis  
+- `-name wb_clk_i` → Assigns a name to the clock  
+- `-period 10` → Specifies the clock period in nanoseconds  
+- `[get_ports wb_clk_i]` → Applies the constraint to the clock input port  
+
+This ensures that all timing paths are evaluated with respect to the defined clock period.
+
+---
+
+## 5. Role in ORFS Flow
+
+During the ORFS flow, the constraint file is read and applied during synthesis and timing analysis.
+
+The clock constraint is used to:
+
+- Perform static timing analysis (STA)  
+- Optimize logic to meet timing requirements  
+- Evaluate setup and hold constraints  
+- Generate timing reports  
+
+---
+
+## 6. Constraint Validation
+
+Successful application of the clock constraint is confirmed when:
+
+- The clock is detected in timing reports  
+- No missing clock warnings are reported  
+- Timing analysis (STA) is performed  
+- Slack values are computed for timing paths  
+
+---
+
+## 7. Summary
+
+Phase-3 involves:
+
+- Identifying the clock signal from RTL  
+- Defining the clock constraint in the SDC file  
+- Applying the constraint in the ORFS flow  
+- Enabling timing-driven synthesis and analysis  
+
+This step ensures that the design is evaluated and optimized based on the required clock timing.
+
+---
+
+</details>
+
+
+<details>
+<summary><strong>PHASE 4 — Run the RTL-to-GDS Flow</strong></summary>
+
+# RTL-to-GDS Implementation of `user_project_wrapper` using OpenROAD
+
+---
+
+## 🚀 Project Overview
+
+This project implements the complete **RTL-to-GDSII physical design flow** for the `user_project_wrapper` module using the **OpenROAD Flow Scripts (ORFS)** on the **SKY130HD** technology.
+
+The objective is to successfully execute all backend stages and analyze design behavior, constraints, and physical limitations.
+
+---
+
+## 🧠 Design Architecture
+
+### 🔹 Top Module
+
+* `user_project_wrapper`
+
+### 🔹 Key Interfaces
+
+* **Wishbone Slave Interface** → CPU communication
+* **GPIO Interface** → External IO interaction
+* **Logic Analyzer Interface (128-bit)** → Debug visibility
+* **Interrupts (3-bit)** → Event signaling
+
+### 🔹 Internal Modules
+
+* `debug_regs` → Memory-mapped debug registers
+* Optional modules (conditional):
+
+  * GPIO testing module
+  * Logic analyzer module
+
+### 🔹 Architectural Insight
+
+The design is **IO-dominated**, meaning:
+
+* Large number of IO pins (~600+)
+* Relatively small core logic
+
+👉 This significantly impacts:
+
+* Floorplanning
+* Placement
+* Utilization
+
+---
+
+## ⚙️ Configuration Strategy
+
+### Key Parameters (config.mk)
+
+![config](WEEK-4/Phase4/config.jpeg)
+
+---
+
+### Justification
+
+* **DIE_AREA increased** → Required to accommodate large IO count
+* **CORE_UTILIZATION = 18%** → Prevents congestion in IO-heavy design
+* **FP_IO_MODE = 1** → Improves IO distribution
+* **Clock = 100 MHz** → Standard synchronous design constraint
+
+---
+
+##  Flow Execution (Commands)
+
+```bash
+make synth
+make floorplan
+make place
+make cts
+make route
+make finish
+```
+
+---
+
+## 📊 Flow Stages and Technical Insights
+
+---
+
+###  1. Synthesis
+
+* Tool: Yosys
+* Converts RTL → gate-level netlist
+
+**Insight:**
+
+* Correct RTL inclusion is critical
+* Missing files → module not found error
+
+### EVIDENCE
+
+![SYNTH](WEEK-4/Phase4/Synth.jpeg)
+
+---
+
+### 2. Floorplanning
+
+* Defines die/core area
+* Places IO pins
+
+**Insight:**
+
+* IO count determines die size
+* Initial failure due to insufficient boundary slots
+
+### EVIDENCE
+
+![floor](WEEK-4/Phase4/floor.jpeg)
+
+---
+
+### 3. Placement
+
+Includes:
+
+* Global placement
+* IO placement
+* Detailed placement
+
+**Results:**
+
+* ~21% utilization
+* ~6400 µm² area
+
+**Insight:**
+
+* Placement spreads cells due to IO constraints
+* Additional buffers inserted during optimization
+
+### EVIDENCE
+
+![place](WEEK-4/Phase4/place.jpeg)
+
+---
+
+### 4. Clock Tree Synthesis (CTS)
+
+* Clock buffers inserted
+* H-tree topology generated
+
+**Results:**
+
+* ~97 clock sinks
+* Balanced clock distribution
+
+**Insight:**
+
+* CTS automatically triggers placement if not completed
+* Ensures minimal clock skew
+
+### EVIDENCE
+
+![cts](WEEK-4/Phase4/cts.jpeg)
+
+---
+
+### 5. Routing
+
+* Global + detailed routing
+* Metal layers used for interconnect
+
+**Insight:**
+
+* No congestion observed
+* Design is routing-friendly due to low utilization
+
+### EVIDENCE
+
+![route](WEEK-4/Phase4/route.jpeg)
+
+---
+
+### 6. Fill Insertion
+
+* Dummy metal added
+* Ensures manufacturing density compliance
+
+---
+
+### 7. Final Database & GDS
+
+* `.odb` → final database
+* `.gds` → layout file
+
+---
+
+### 8. Timing Analysis
+
+* Static Timing Analysis performed
+
+**Result:**
+
+* No setup/hold violations
+
+---
+
+## 📈 Metrics Summary
+
+```text
+Design Area        : ~6400 µm²  
+Utilization        : ~21–22%  
+Instance Count     : ~970  
+Clock Sinks        : ~97  
+Buffers (CTS)      : ~9+  
+```
+
+---
+
+## ✅ Conclusion
+
+The RTL-to-GDS flow was successfully completed for the `user_project_wrapper` design. All stages executed correctly, and physical design challenges such as IO overflow were resolved through proper configuration and analysis.
+
+The design meets timing, routing, and layout requirements under SKY130HD technology.
+
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 6 — Debugging and Issue Resolutiont</strong></summary>
+## 📦 Phase 5 — Outputs for Gate-Level Verification Preparation
+
+This phase focuses on collecting key artifacts generated during the RTL-to-GDS flow. These outputs are essential for verification, analysis, and final tapeout readiness.
+
+---
+
+### 🔹 1. Synthesized Netlist
+
+**Purpose:**
+
+* Represents RTL after logic synthesis
+* Used for gate-level simulation and verification
+
+**Generated During:**
+
+* Synthesis stage
+
+**Command:**
+
+```bash id="wz7m1o"
+make synth
+```
+
+**Location:**
+
+```text id="e3ql5l"
+results/sky130hd/user_project_wrapper/base/1_1_yosys.v
+```
+
+---
+
+### 🔹 2. Final Netlist (Post-Implementation)
+
+**Purpose:**
+
+* Netlist after placement, CTS, and optimization
+* Reflects actual physical implementation
+
+**Generated During:**
+
+* CTS / Routing stages
+
+**Command:**
+
+```bash id="gr4o6p"
+make cts
+make route
+```
+
+**Location:**
+
+```text id="v0o3al"
+results/sky130hd/user_project_wrapper/base/
+```
+
+---
+
+### 🔹 3. Routed Database (.odb)
+
+**Purpose:**
+
+* Contains placed and routed physical design
+* Used for further analysis and visualization
+
+**Generated During:**
+
+* Routing stage
+
+**Command:**
+
+```bash id="9mspkz"
+make route
+```
+
+**Location:**
+
+```text id="n2fx3n"
+results/sky130hd/user_project_wrapper/base/5_route.odb
+```
+
+---
+
+### 🔹 4. Final Filled Database
+
+**Purpose:**
+
+* Includes dummy metal fill for manufacturing compliance
+* Required for signoff and downstream verification
+
+**Generated During:**
+
+* Fill insertion stage
+
+**Command:**
+
+```bash id="f9g2v0"
+make fill
+```
+
+**Location:**
+
+```text id="9pkc1b"
+results/sky130hd/user_project_wrapper/base/6_fill.odb
+```
+
+---
+
+### 🔹 5. GDSII (Final Layout)
+
+**Purpose:**
+
+* Final mask layout used for fabrication
+* Contains complete physical design
+
+**Generated During:**
+
+* GDS generation stage
+
+**Command:**
+
+```bash id="6o5q3x"
+make final
+```
+
+**Location:**
+
+```text id="9h1xur"
+results/sky130hd/user_project_wrapper/base/*.gds
+```
+
+---
+
+### 🔹 6. Timing Report
+
+**Purpose:**
+
+* Provides setup and hold timing analysis
+* Ensures timing closure
+
+**Generated During:**
+
+* Final reporting stage
+
+**Command:**
+
+```bash id="j2p8nq"
+make final
+```
+
+**Location:**
+
+```text id="o5xv8m"
+logs/sky130hd/user_project_wrapper/base/
+reports/sky130hd/user_project_wrapper/base/
+```
+
+---
+
+## 🧠 Summary
+
+| Output                 | Purpose                   | Stage         |
+| ---------------------- | ------------------------- | ------------- |
+| Synthesized Netlist    | Logic after synthesis     | Synthesis     |
+| Final Netlist          | Post-implementation logic | CTS / Routing |
+| Routed Database (.odb) | Physical design           | Routing       |
+| Filled Database        | Manufacturing compliance  | Fill          |
+| GDSII                  | Final layout              | GDS           |
+| Timing Report          | Timing verification       | Reporting     |
+
+---
+
+## ✅ Insight
+
+* Each stage produces artifacts required for downstream verification
+* Proper tracking of outputs ensures **traceability and validation**
+* These outputs are critical for **gate-level simulation, physical verification, and tapeout readiness**
+
+---
+
+</details>
+
+
+<details>
+<summary><strong>PHASE 6 — Debugging and Issue Resolutiont</strong></summary>
+
+  ---
+  
+### 🔴 1. Floorplanning Issue: Improper CORE_AREA and DIE_AREA Usage
+
+**What went wrong:**
+
+* Manual constraints were applied using `CORE_AREA` and `DIE_AREA`, restricting placement flexibility
+
+**How it was identified:**
+
+* Uneven IO pin distribution along die boundary
+* Low and inconsistent core utilization
+* Poor floorplan visualization
+
+**Root Cause:**
+
+* Fixed core and die dimensions limited the tool’s ability to optimize placement
+* The design is IO-dominated, requiring flexible boundary sizing
+
+**Fix Applied:**
+
+* Removed explicit `CORE_AREA` and `DIE_AREA` constraints
+* Switched to utilization-based sizing using `CORE_UTILIZATION`
+
+**Result:**
+
+* Improved IO pin distribution
+* Balanced core utilization
+* Stable and successful floorplanning
+
+**Insight:**
+
+* Utilization-driven sizing is preferred for IO-heavy designs
+* Over-constraining floorplan parameters leads to inefficient layouts
+
+---
+
+### 🔴 2. IO Pin Overflow Error
+
+**What went wrong:**
+
+* IO placement failed due to insufficient die boundary
+
+**Error:**
+
+```
+Number of IO pins (637) exceeds available positions (636)
+```
+
+**How it was identified:**
+
+* Flow terminated during IO placement stage
+* Error log indicated insufficient boundary slots
+
+**Root Cause:**
+
+* Large number of IO signals (GPIO + Logic Analyzer + Wishbone)
+* Die size too small to accommodate all pins
+
+**Fix Applied:**
+
+* Switched to utilization-based floorplanning (`CORE_UTILIZATION = 18%`)
+* Allowed tool to automatically determine die size
+
+**Result:**
+
+* IO placement completed successfully
+* Pins distributed evenly across die boundary
+
+**Insight:**
+
+* This is a classic **IO-limited design problem**
+* IO count directly determines minimum die size
+
+---
+
+### 🔴 3. Synthesis Failure
+
+**What went wrong:**
+
+* Synthesis failed due to missing top module
+
+**Error:**
+
+```
+Module `user_project_wrapper` not found
+```
+
+**How it was identified:**
+
+* Yosys error during synthesis stage
+* No netlist generated
+
+**Root Cause:**
+
+* Incorrect RTL file path in `VERILOG_FILES`
+
+**Fix Applied:**
+
+* Corrected RTL file paths in configuration
+
+**Result:**
+
+* Synthesis completed successfully
+* Netlist generated correctly
+
+**Insight:**
+
+* Proper RTL inclusion is critical
+* Incorrect file paths can completely break the flow
+
+---
+
+### 🔴 4. Placement Behavior During CTS
+
+**What went wrong:**
+
+* Placement appeared to execute during CTS stage
+
+**How it was identified:**
+
+* Placement logs observed while running `make cts`
+
+**Root Cause:**
+
+* OpenROAD flow is dependency-driven
+* CTS requires placement results
+
+**Fix Applied:**
+
+* No fix required (expected behavior)
+
+**Result:**
+
+* Placement executed automatically before CTS
+
+**Insight:**
+
+* Later stages automatically trigger prerequisite stages
+* Understanding flow dependencies is essential
+
+---
+
+### 🔴 5. Utilization Mismatch
+
+**What went wrong:**
+
+* Difference between target and achieved utilization
+
+**Observation:**
+
+* Target utilization: ~18%
+* Achieved utilization: ~21%
+
+**How it was identified:**
+
+* Observed in placement reports
+
+**Root Cause:**
+
+* Buffer insertion during optimization
+* Routing overhead
+* Tool-driven adjustments during placement and CTS
+
+**Fix Applied:**
+
+* No fix required (expected behavior)
+
+**Result:**
+
+* Design remained stable and routable
+
+**Insight:**
+
+* Utilization is a guideline, not a strict constraint
+* Actual utilization increases after optimization
+
+---
+
+## 🧠 Key Learnings
+
+* IO-dominated designs require flexible die sizing
+* Utilization-based floorplanning provides better results than fixed area
+* OpenROAD flow is dependency-driven
+* Debugging logs is essential for identifying root causes
+* Most physical design issues arise from constraints, not RTL
+
+</details>
