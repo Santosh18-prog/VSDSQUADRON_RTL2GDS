@@ -6941,5 +6941,158 @@ GLS:  Same bit stream (with gate delays)
 <details>
 <summary><strong>PHASE 7 — Debugging (If Mismatch Occurs)</strong></summary>
 
+## 🔴 1. Power Pin Interface Mismatch
+
+### What went wrong:
+
+Gate-level netlist failed during Caravel simulation due to missing power pins in the module interface
+
+### Error:
+
+Port "vdda1/vccd1/vssd1..." is not a port of mprj
+
+### How it was identified:
+
+Simulation failed during elaboration stage  
+Error logs indicated mismatch between Caravel wrapper and user_project_wrapper ports
+
+### Root Cause:
+
+Synthesized netlist (6_final.v) did not include power pins  
+Caravel wrapper expects power pins under USE_POWER_PINS condition
+
+### Fix Applied:
+
+Enabled power pins during simulation using:
+- USE_POWER_PINS define
+- Correct netlist generation with power pins
+
+Ensured consistency between:
+- Caravel wrapper interface  
+- Gate-level netlist ports  
+
+### Result:
+
+Simulation proceeded successfully without port mismatch errors
+
+### Insight:
+
+Power pin compatibility is critical in SoC-level integration  
+GLS must match wrapper interface exactly, unlike standalone RTL
+
+
+
+## 🔴 2. Clock Distribution Effects (CTS Impact)
+
+ ### Issue Observed
+
+Timing-sensitive modules exhibited mismatches during Gate-Level Simulation (GLS), while RTL simulation behaved correctly.
+
+### Debug Approach
+
+Waveform analysis revealed signal misalignment with respect to clock edges in GLS.
+
+### Root Cause
+
+Clock Tree Synthesis (CTS) introduced physical effects:
+
+Clock buffer insertion
+Clock skew across sequential elements
+Non-uniform clock arrival times
+
+As a result, flip-flops were triggered at slightly different times compared to ideal RTL behavior.
+
+### Resolution
+No RTL or structural changes required
+Verified that deviations are expected due to gate and clock delays
+
+### Outcome
+
+Design functionality validated under realistic timing conditions.
+
+### Key Insight
+
+Clock distribution is a major contributor to RTL vs GLS mismatches.
+Timing closure must account for clock skew and physical delays.
+
+![delay](WEEK-5/Phase7/delay.png)
+
+
+## 🔴 3. Reset and Initialization Sensitivity
+
+### What went wrong:
+
+Initial cycles in GLS behaved differently compared to RTL
+
+How it was identified:
+
+Waveform comparison showed differences during reset deassertion phase
+
+### Root Cause:
+
+Gate-level simulation depends on:
+- Actual flip-flop initialization  
+- Reset synchronization timing  
+
+RTL assumes ideal initialization
+
+### Fix Applied:
+
+Verified reset propagation through waveform  
+Ensured no missing reset connections  
+
+### Result:
+
+Confirmed behavior difference is due to realistic hardware initialization
+
+### Insight:
+
+Reset handling is more critical in GLS than RTL  
+Improper reset timing can lead to transient mismatches
+
+
+## 🔴 4. Netlist Integration into Verification Flow
+
+### What went wrong:
+
+Initial integration of gate-level netlist caused simulation failures
+
+### How it was identified:
+
+Compilation and elaboration errors during simulation
+
+### Root Cause:
+
+- Missing standard cell libraries  
+- Incorrect Makefile configuration  
+- Improper inclusion of netlist  
+
+### Fix Applied:
+
+- Included required libraries:
+  sky130_fd_sc_hd.v  
+  primitives.v  
+- Updated Makefile to use 6_final.v instead of RTL  
+- Ensured correct compilation order  
+
+### Result:
+
+Successful GLS execution for both standalone and Caravel tests
+
+### Insight:
+
+GLS requires complete dependency inclusion  
+Verification flow must be carefully extended, not rebuilt
+
+
+## Key Learnings
+
+Gate-Level Simulation reflects real hardware behavior, not ideal RTL behavior  
+Power pin alignment is mandatory for SoC-level integration  
+Timing effects (delays, skew, buffering) are the primary source of GLS mismatches  
+Clock and reset handling become critical at gate-level  
+GLS debugging requires waveform analysis, not just functional checks  
+Successful GLS validation confirms design correctness after physical implementation
+
 </details>
 
