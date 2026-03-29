@@ -5160,6 +5160,8 @@ Number of IO pins (637) exceeds available positions (636)
 
 </details>
 
+--- 
+
 ## WEEK–5 (Gate-Level Simulation (GLS) for Full Block Verification)
 
 <details>
@@ -5223,7 +5225,7 @@ Prepare and verify the gate-level netlist for Gate-Level Simulation to validate 
 - Analyze timing results
 
 ---
-
+</details>
 <details>
 <summary><strong>PHASE 2 — Modify Verification Flow for GLS</strong></summary>
 
@@ -5456,10 +5458,17 @@ Gate-level simulation shows **functional consistency** with RTL simulation acros
 
 </details>
 <details>
-<summary><strong>PHASE 1 — Prepare Gate-Level Netlist Integration</strong></summary>
+<summary><strong>PHASE 5 — GTKWave Visualization</strong></summary>
 
 </details>
 <details>
-<summary><strong>PHASE 1 — Prepare Gate-Level Netlist Integration</strong></summary>
+<summary><strong>PHASE 6 — RTL vs GLS Comparison</strong></summary>
 
 </details>
+
+
+<details>
+<summary><strong>PHASE 7 — Debugging (If Mismatch Occurs)</strong></summary>
+
+</details>
+
