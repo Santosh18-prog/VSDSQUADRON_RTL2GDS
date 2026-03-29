@@ -5570,7 +5570,7 @@ Monitor: Timeout, Test GPIO (RTL) Failed
 
 #### Waveform Evidence 
 
-![timer](WEEK-5/Phase5/Standalone/timer.jpeg)
+![uart](WEEK-5/Phase5/Standalone/uart.jpeg)
 
 | Signal | Behavior | Observation |
 |--------|----------|-------------|
@@ -6388,6 +6388,9 @@ To systematically compare RTL simulation results (Week–3) with Gate-Level Simu
 ### 3.1 SPI Master Module
 
 #### RTL Behavior (Week-3)
+
+![rtl](WEEK-5/Phase6/spi_1.jpeg)
+
 ```
 Clock: Ideal timing (0 delay)
 MOSI: Data transitions instantaneous
@@ -6398,6 +6401,9 @@ Timing: <1 ns effective delay
 ```
 
 #### GLS Behavior (Week-5) 
+
+![gls](WEEK-5/Phase6/spi.jpeg)
+
 ```
 Clock: Continuous green waveform (realistic)
 flash_clk: Multiple cycles per transaction
