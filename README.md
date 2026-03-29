@@ -6935,7 +6935,7 @@ GLS:  Same bit stream (with gate delays)
 
 ---
 
-</details
+</details>
 
 
 <details>
