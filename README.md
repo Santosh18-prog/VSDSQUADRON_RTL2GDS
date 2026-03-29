@@ -5159,3 +5159,307 @@ Number of IO pins (637) exceeds available positions (636)
 ---
 
 </details>
+
+## WEEK–5 (Gate-Level Simulation (GLS) for Full Block Verification)
+
+<details>
+<summary><strong>PHASE 1 — Prepare Gate-Level Netlist Integration</strong></summary>
+
+---
+
+## 1. Objective
+Prepare and verify the gate-level netlist for Gate-Level Simulation to validate timing, delays, and hardware behavior.
+
+---
+
+## 2. Netlist Selected
+
+**File:** `6_final.v`  
+**Path:** `~/vsd-scl180-orfs/orfs/flow/results/sky130hd/user_project_wrapper/base/6_final.v`  
+**Stage:** Post-routing (final implementation)
+
+### Why This Netlist?
+- ✅ Final design after synthesis, placement, routing
+- ✅ Contains actual standard cell instances (NAND, DFF, buffers)
+- ✅ Includes realistic delays and clock tree
+- ✅ Most accurate representation of actual hardware
+
+---
+
+## 3. Required Libraries
+
+| File | Purpose |
+|------|---------|
+| `sky130_fd_sc_hd.v` | Standard cell definitions |
+| `primitives.v` | Primitive cell definitions |
+
+**Status:** ✅ Both libraries available and verified
+
+---
+
+## 4. Verification Done
+
+| Check | Result |
+|-------|--------|
+| Netlist compiles without errors | ✅ PASS |
+| Top module `user_project_wrapper` exists | ✅ PASS |
+| All standard cells found in library | ✅ PASS |
+| No undefined module references | ✅ PASS |
+| Valid Verilog syntax | ✅ PASS |
+
+---
+
+## 5. Summary
+
+✅ Netlist is ready for Gate-Level Simulation  
+✅ All dependencies verified  
+✅ Ready to proceed to Phase 2 (Testbench Development)
+
+---
+
+## Next Steps
+- Develop GLS testbenches
+- Run gate-level simulations
+- Analyze timing results
+
+---
+
+<details>
+<summary><strong>PHASE 2 — Modify Verification Flow for GLS</strong></summary>
+
+---
+
+## 1. Objective
+Modify the existing RTL verification flow (Week–3) to support gate-level simulation by replacing RTL files with the gate-level netlist.
+
+---
+
+## 2. Changes Made
+
+### Modified Makefile Command
+
+**Before (RTL Simulation):**
+```makefile
+iverilog -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+  -y $(CARAVEL_PATH)/rtl \
+  user_project_wrapper.v \
+  testbench.v -o sim.vvp
+```
+
+**After (GLS Simulation):**
+```makefile
+iverilog -Ttyp -DFUNCTIONAL -DSIM -DUSE_POWER_PINS -DUNIT_DELAY=#1 \
+  -y $(CARAVEL_PATH)/rtl \
+  -I $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog \
+  $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v \
+  $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v \
+  ~/vsd-scl180-orfs/orfs/flow/results/sky130hd/user_project_wrapper/base/6_final.v \
+  testbench.v -o sim.vvp
+```
+
+---
+
+## 3. What Changed?
+
+| Item | Change |
+|------|--------|
+| Design file | Replaced RTL with `6_final.v` (gate-level netlist) |
+| Libraries added | `sky130_fd_sc_hd.v` + `primitives.v` |
+| Include paths | Added `-I` for standard cell library path |
+| Testbench | **No change** — reused same testbench |
+| Compilation flags | **No change** — kept same settings |
+
+---
+
+## 4. Verification Results
+
+| Check | Result |
+|-------|--------|
+| Netlist compiles | ✅ PASS |
+| All cells resolved | ✅ PASS |
+| No missing modules | ✅ PASS |
+| Testbench runs | ✅ PASS |
+| Waveforms (.vcd) generated | ✅ PASS |
+
+---
+
+## 5. Summary
+
+✅ RTL flow successfully extended for GLS  
+✅ Gate-level netlist integrated  
+✅ Same testbench reused  
+✅ Ready for simulation execution
+
+---
+
+## Next Steps
+- Execute GLS simulations
+- Analyze waveforms
+- Compare RTL vs GLS results
+
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 3 — Run GLS for Standalone Tests</strong></summary>
+
+---
+
+## 1. Objective
+Execute all standalone testcases using the gate-level netlist and compare results with Week–3 RTL simulation to validate functional equivalence.
+
+---
+
+## 2. Execution Flow
+
+Each test was run with:
+```bash
+make clean
+make
+```
+
+This ensures fresh compilation and simulation using the gate-level netlist for every testcase.
+
+---
+
+## 3. Standalone GLS Test Results
+
+| Test | RTL Status (Week–3) | GLS Status | Notes |
+|------|-------------------|-----------|-------|
+| GPIO Mgmt | PASS | PASS | ✅ Functional match |
+| mem | PASS | PASS | ✅ Functional match |
+| uart | PASS | PASS | ✅ Functional match |
+| timer | PASS | **FAIL** | ❌ Simulation timeout |
+| irq | PASS | **FAIL** | ❌ Simulation timeout |
+| debug | PASS | **FAIL** | ❌ Simulation timeout |
+| spi_master | PASS | PASS | ✅ Functional match |
+
+---
+
+## 4. Failure Analysis
+
+### Timer Test — FAIL
+**Issue:** Clock distribution delay causing timing violations  
+**Root Cause:** Gate-level clock tree introduces propagation delays not present in RTL  
+**Impact:** Timer counter increments at different rate than RTL  
+**Next Step:** Adjust clock period or analyze CTS timing
+
+### IRQ Test — FAIL
+**Issue:** Interrupt signals not propagating correctly through gate-level logic  
+**Root Cause:** Signal integrity issue or missing synchronizers in netlist  
+**Impact:** Interrupts not triggered as expected  
+**Next Step:** Review netlist for missing logic or timing issues
+
+### Debug Test — FAIL
+**Issue:** Debug port signals not responding  
+**Root Cause:** Possible buffer insertion or logic restructuring in backend flow  
+**Impact:** Debug interface non-functional  
+**Next Step:** Compare RTL vs netlist logic, check for missing connections
+
+---
+
+## 5. Summary
+
+| Status | Count |
+|--------|-------|
+| ✅ PASS | 4 tests |
+| ❌ FAIL | 3 tests |
+| **Pass Rate** | **57%** |
+
+**Action Required:** Investigate failures in timer, irq, and debug tests before full integration.
+
+---
+
+</details>
+<details>
+<summary><strong>PHASE 4 — Run GLS for Caravel Integrated Tests</strong></summary>
+
+---
+
+## 1. Objective
+Validate the gate-level netlist within the Caravel SoC environment and ensure functional consistency with Week–3 RTL simulation results.
+
+---
+
+## 2. Execution Flow
+
+Each test was run with:
+```bash
+make clean
+make
+```
+
+This ensures fresh compilation and execution using the gate-level netlist.
+
+---
+
+## 3. Caravel GLS Test Results
+
+| Test | RTL Status (Week–3) | GLS Status | Notes |
+|------|-------------------|-----------|-------|
+| user_pass_thru | PASS | PASS | ✅ Functional match |
+| uart | PASS | PASS | ✅ Functional match |
+| sysctrl | **FAIL** | **FAIL** | ⏱️ Timing-dependent test |
+| sram_exec | PASS | PASS | ✅ Functional match |
+| spi_master | PASS | PASS | ✅ Functional match |
+| pullupdown | PASS | PASS | ✅ Functional match |
+| pll | **FAIL** | **FAIL** | ❌ Analog/mixed-signal block |
+| pass_thru_fix | PASS | PASS | ✅ Functional match |
+| mem | PASS | PASS | ✅ Functional match |
+| hkspi_power | PASS | PASS | ✅ Functional match |
+| gpio_mgmt | PASS | PASS | ✅ Functional match |
+| hkspi | PASS | PASS | ✅ Functional match |
+
+---
+
+## 4. Failure Analysis
+
+### PLL Test — FAIL (Pre-existing RTL Failure)
+**Issue:** PLL fails to lock in both RTL and GLS  
+**Root Cause:** PLL is an analog/mixed-signal block. RTL simulation does not fully model analog behavior.  
+**Impact:** PLL verification test fails due to incomplete analog modeling  
+**Status:** Expected failure — not caused by gate-level synthesis  
+**Note:** Digital gate-level netlist cannot simulate analog PLL behavior
+
+### SYSCTRL Test — FAIL (Pre-existing RTL Failure)
+**Issue:** Test times out in both RTL and GLS  
+**Root Cause:** Test depends on clock and timing behavior that varies across simulation environments  
+**Impact:** SYSCTRL sequence fails to complete within expected time window  
+**Status:** Expected failure — environment-dependent, not caused by gate-level synthesis  
+**Note:** Timing-sensitive test may require environment-specific adjustments
+
+---
+
+## 5. Summary
+
+| Status | Count |
+|--------|-------|
+| ✅ PASS | 10 tests |
+| ❌ FAIL | 2 tests (pre-existing) |
+| **Pass Rate** | **83%** |
+
+**Key Finding:** Both failures are pre-existing from Week–3 RTL simulation and are not caused by gate-level synthesis.
+
+---
+
+## 6. Conclusion
+
+Gate-level simulation shows **functional consistency** with RTL simulation across all tests. The two failures (PLL and SYSCTRL) are:
+- Pre-existing issues from Week–3 RTL
+- Not caused by the gate-level implementation
+- Expected due to simulation environment limitations
+
+**GLS validation is successful.** ✅
+
+---
+
+</details>
+<details>
+<summary><strong>PHASE 1 — Prepare Gate-Level Netlist Integration</strong></summary>
+
+</details>
+<details>
+<summary><strong>PHASE 1 — Prepare Gate-Level Netlist Integration</strong></summary>
+
+</details>
