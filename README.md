@@ -6862,8 +6862,6 @@ GLS:  Same bit stream (with gate delays)
 - Zero functional defects introduced by synthesis
 - Pre-existing RTL issues correctly reproduced
 
-**Confidence Level:** **VERY HIGH** ✅
-
 ### Timing Equivalence: ✅ **ACCEPTABLE**
 
 **Statement:** Gate-level timing reflects realistic hardware delays. Timing margins adequate for all but 2 timing-critical tests.
@@ -6873,8 +6871,6 @@ GLS:  Same bit stream (with gate delays)
 - 18/20 tests pass with acceptable margins
 - 2 tests timeout due to tight +1000 cycle constraint
 - Timing differences are expected and realistic
-
-**Confidence Level:** **HIGH** ✅
 
 ### Synthesis Quality: ✅ **EXCELLENT**
 
