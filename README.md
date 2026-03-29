@@ -6389,7 +6389,7 @@ To systematically compare RTL simulation results (Week–3) with Gate-Level Simu
 
 #### RTL Behavior (Week-3)
 
-![rtl](WEEK-5/Phase6/spi_1.jpeg)
+![rtl](WEEK-5/Phase6/spi-1.jpeg)
 
 ```
 Clock: Ideal timing (0 delay)
