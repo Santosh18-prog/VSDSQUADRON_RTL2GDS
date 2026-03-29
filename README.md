@@ -5460,11 +5460,6 @@ Gate-level simulation shows **functional consistency** with RTL simulation acros
 <details>
 <summary><strong>PHASE 5 — GTKWave Visualization</strong></summary>
 
-</details>
-<details>
-<summary><strong>PHASE 6 — RTL vs GLS Comparison</strong></summary>
-
----
 
 ## 1. Objective
 
@@ -6019,6 +6014,12 @@ Result: TIMEOUT
 **Gate-Level Timing Verification:** ⚠️ **MARGINAL (Acceptable with caveats)**  
 **Overall GLS Validation:** ✅ **PASSED** (with timing optimization recommended)  
 **Ready for Fabrication:** ✅ **YES**
+</details>
+<details>
+<summary><strong>PHASE 6 — RTL vs GLS Comparison</strong></summary>
+
+---
+
 
 
 </details>
