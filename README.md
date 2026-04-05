@@ -8191,8 +8191,6 @@ gtkwave gls_dump.vcd
 
 ---
 
-# Week 6 — Phase 4 & Phase 5: Gate-Level Simulation and Waveform Validation
-
 **Block:** `housekeeping_spi` — SPI Controller for Caravel SoC  
 **Netlist:** `6_final.v` (ORFS post-route + fill)  
 **Technology:** sky130hd  
@@ -9550,7 +9548,7 @@ file naming — remained completely intact.
 
 ---
 
-## Issue 5 — includes.gl.caravel Has caravel Commented Out
+## Issue 4 — includes.gl.caravel Has caravel Commented Out
 
 ### What Happened
 
