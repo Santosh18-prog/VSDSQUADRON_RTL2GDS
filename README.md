@@ -1,4 +1,4 @@
-# 🚀 VSD-Squadron RTL2GDSII SOC Implementation 
+![def](https://github.com/user-attachments/assets/ec99f400-ded6-42c6-a7f8-cab2e17e84e2)# 🚀 VSD-Squadron RTL2GDSII SOC Implementation 
 
 ## WEEK-1 (Digital VLSI SoC Design and Planning – Foundation Phase)
 
@@ -7577,7 +7577,9 @@ Log                        Elapsed/s Peak Memory/MB  sha1sum .odb [0:20)
 1_synth                            0            115 0788f1b92b18a6698613
 ```
 
-**Output:** `results/sky130hd/housekeeping_spi/base/1_synth.odb`
+![synth](WEEK-6/Phase2/synth.jpeg)
+![synth](WEEK-6/Phase2/synth_1.jpeg)
+![synth](WEEK-6/Phase2/synth_1.jpeg)
 
 ---
 
@@ -7624,7 +7626,7 @@ Log                        Elapsed/s Peak Memory/MB  sha1sum .odb [0:20)
 
 > PDN grid visible — red = met1 (horizontal), cyan = met3 (power stripes)
 
-![Floorplan PDN](docs/2_floorplan_pdn.png)
+![floorplan](WEEK-6/Phase2/floorplan.jpeg)
 
 ---
 
@@ -7687,7 +7689,7 @@ Design area 2796 um^2 68% utilization.
 
 #### Placed Layout View
 
-![Placement Result](docs/3_place.png)
+![place](WEEK-6/Phase2/placement.jpeg)
 
 ---
 
@@ -7734,7 +7736,7 @@ Design area 2796 um^2 68% utilization.
 
 #### CTS Screenshot Evidence
 
-![CTS Log](docs/4_cts_log.png)
+![cts](WEEK-6/Phase2/cts.jpeg)
 
 ---
 
@@ -7798,9 +7800,11 @@ Filler cells used: `fill_1`, `fill_2`, `fill_4`, `fill_8` from sky130hd
 
 **Output:** `results/sky130hd/housekeeping_spi/base/5_route.odb`
 
-#### Routed Layout View
+### ROUTING COMPLETION EVIDENCE
 
-![Routed Layout](docs/5_route.png)
+![route](WEEK-6/Phase2/route.jpeg)
+
+
 
 ---
 
@@ -7835,6 +7839,10 @@ make[1]: *** [Makefile:682: do-gds-merged] Error 134
 > export QT_QPA_PLATFORM=xcb
 > make gds
 > ```
+
+### FINAL GDS LAYOUT
+
+![final](WEEK-6/Phase2/final.jpeg)
 
 ---
 
@@ -7891,11 +7899,14 @@ module housekeeping_spi(reset, SCK, SDI, CSB, SDO, sdoenb, idata,
   ...
 ```
 
-> Screenshot: `docs/1_synth_netlist.png`
+> Screenshot:
+
+![synth](WEEK-6/Phase3/synth_v.jpeg)
+![synth](WEEK-6/Phase3/synth_v2.jpeg)
 
 ---
 
-### 2. Final Routed Database
+### 2. Final LAYOUT
 
 **File:** `results/sky130hd/housekeeping_spi/base/6_final.odb`
 
@@ -7909,6 +7920,7 @@ This is the post-routing, post-fill, post-RCX OpenROAD database used for signoff
 | Core utilization | 68% |
 | Die size | 67.725 × 67.725 um |
 
+![layout](WEEK-6/Phase3/final.jpeg)
 ---
 
 ### 3. DEF Layout
@@ -7933,7 +7945,7 @@ TRACKS X 170 DO 199 STEP 340 LAYER met1 ;
 
 23 standard cell rows, track definitions for li1 through met4.
 
-> Screenshot: `docs/6_final_def.png`
+> Screenshot: ![synth](WEEK-6/Phase3/def.jpeg)
 
 ---
 
@@ -7960,7 +7972,7 @@ module housekeeping_spi (CSB, SCK, SDI, SDO,
   ...
 ```
 
-> Screenshot: `docs/6_final_netlist.png`
+> Screenshot: ![synth](WEEK-6/Phase3/final_v.jpeg)
 
 ---
 
@@ -8616,7 +8628,7 @@ GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
 
 #### GTKWave Screenshot
 
-> ![Block-level GLS Waveform](docs/gtkwave_hkspi_gls.png)
+> ![gls](WEEK-6/Phase5/A1_gls.jpeg)
 >
 > *Block-level GLS waveform — `hkspi_gls.vcd` — 0 to 7055 ns.  
 > Signals: CSB, SCK, SDO, SDI, reset, wrstb, sdoenb, read\_data\[7:0\], rdstb, idata\[7:0\]*
@@ -8768,14 +8780,14 @@ gtkwave ~/vsdsquadron-soc/caravel_mgmt_soc_litex/verilog/dv/tests-caravel/hkspi/
 
 **System-Level RTL Waveform (`RTL-hkspi.vcd`):**
 
-> ![System-level RTL Waveform](docs/gtkwave_rtl.png)
+> ![gls](WEEK-6/Phase5/A2_rtl.jpeg)
 >
 > *System-level RTL waveform — `RTL-hkspi.vcd` — 0 to 61410 ns.  
 > Signals: CSB, clock, RSTB, SCK, SDI, SDO, checkbits\[15:0\], uart\_tx, uart\_rx*
 
 **System-Level GL Waveform (`GL-hkspi.vcd`):**
 
-> ![System-level GL Waveform](docs/gtkwave_gl.png)
+> ![gls](WEEK-6/Phase5/A2_gls.jpeg)
 >
 > *System-level GL waveform — `GL-hkspi.vcd` — 0 to 61410 ns.  
 > Signals: CSB, clock, RSTB, SCK, SDI, SDO, checkbits\[15:0\], uart\_tx, uart\_rx*
@@ -9002,7 +9014,7 @@ gtkwave ~/housekeeping_spi/RTL-hkspi_simple.vcd
 
 **GTKWave session:** `hkspi_tb_simple` — 0 to 7055 ns
 
-![Block-level RTL Waveform](docs/A1_rtl.jpeg)
+![gls](WEEK-6/Phase5/A1_rtl.jpeg)
 
 *Block-level RTL waveform — `hkspi_tb_simple.v` driving `housekeeping_spi.v` — 0 to 7055 ns.  
 Signals: CSB, SCK, SDI, SDO, idata[7:0], reset, read\_data[7:0], wrstb*
@@ -9032,7 +9044,7 @@ gtkwave ~/housekeeping_spi/hkspi_gls.vcd
 
 **GTKWave session:** `hkspi_tb_simple` — 0 to 7055 ns
 
-![Block-level GLS Waveform](docs/A1_gls.jpeg)
+![gls](WEEK-6/Phase5/A1_gls.jpeg)
 
 *Block-level GLS waveform — `hkspi_tb_simple.v` driving `6_final.v` — 0 to 7055 ns.  
 Signals: CSB, SCK, SDI, SDO, idata[7:0], reset, read\_data[7:0], wrstb*
@@ -9141,7 +9153,7 @@ gtkwave ~/vsdsquadron-soc/caravel_mgmt_soc_litex/verilog/dv/tests-caravel/hkspi/
 
 **GTKWave session:** `hkspi_tb` — 0 to 61410 ns
 
-![System-level RTL Waveform](docs/A2_rtl.jpeg)
+![gls](WEEK-6/Phase5/A2_rtl.jpeg)
 
 *System-level RTL waveform — `RTL-hkspi.vcd` — official `hkspi_tb.v` testbench — 0 to 61410 ns.  
 Signals: CSB, clock, RSTB, SCK, SDI, SDO, checkbits\[15:0\], uart\_tx, uart\_rx*
@@ -9172,7 +9184,7 @@ gtkwave ~/vsdsquadron-soc/caravel_mgmt_soc_litex/verilog/dv/tests-caravel/hkspi/
 
 **GTKWave session:** `hkspi_tb` — 0 to 61410 ns
 
-![System-level GLS Waveform](docs/A2_gls.jpeg)
+![gls](WEEK-6/Phase5/A2_gls.jpeg)
 
 *System-level GLS waveform — `GL-hkspi.vcd` — official `hkspi_tb.v` testbench — 0 to 61410 ns.  
 Signals: CSB, clock, RSTB, SCK, SDI, SDO, checkbits\[15:0\], uart\_tx, uart\_rx*
