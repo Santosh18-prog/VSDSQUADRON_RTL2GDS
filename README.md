@@ -8484,6 +8484,8 @@ Time=6355000 CSB=1 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
   - [Phase 5 Checklist](#7-phase-5-checklist)
 - [Overall Week 6 Result](#overall-week-6-result)
 
+---
+
 ### 1. Objective
 
 Open the VCD generated during GLS in GTKWave, observe gate-level signal
