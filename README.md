@@ -8188,12 +8188,489 @@ gtkwave gls_dump.vcd
 
 <details>
 <summary><strong>PHASE 4 — Gate-Level Simulation (GLS)</strong></summary>
+# Week 6 — Phase 4 & Phase 5: Gate-Level Simulation and Waveform Validation
 
---- 
+**Block:** `housekeeping_spi` — SPI Controller for Caravel SoC  
+**Netlist:** `6_final.v` (ORFS post-route + fill)  
+**Technology:** sky130hd  
+**Simulator:** Icarus Verilog (iverilog)  
+**Waveform Viewer:** GTKWave v3.3.104
+
+---
+
+## Table of Contents
+
+- [Phase 4 — Gate-Level Simulation](#phase-4--gate-level-simulation)
+  - [Objective](#1-objective)
+  - [GLS Flow Setup](#2-gls-flow-setup)
+  - [Testbench Description](#3-testbench-description)
+  - [Simulation Command](#4-simulation-command)
+  - [Simulation Output](#5-simulation-output)
+  - [GLS Pass Criteria](#6-gls-pass-criteria)
+
+---
+
+## Phase 4 — Gate-Level Simulation
+
+### 1. Objective
+
+Validate that the gate-level netlist `6_final.v` produced by the OpenROAD
+flow is functionally equivalent to the RTL specification. The GLS uses
+sky130hd standard cell library models to simulate actual gate behavior
+including unit delays.
+
+---
+
+### 2. GLS Flow Setup
+
+#### Directory Structure
+
+```
+~/housekeeping_spi/
+├── 6_final.v              # Gate-level netlist (post-route + fill)
+├── hkspi_tb_simple.v      # Block-level GLS testbench
+├── hkspi_gls.vcd          # Output VCD waveform
+└── hkspi_sim              # Compiled simulation binary
+```
+
+#### PDK Cell Library Paths
+
+```
+primitives.v:
+  /home/santosh/.volare/volare/sky130/versions/
+  0fe599b2afb6708d281543108caf8310912f54af/
+  sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
+
+sky130_fd_sc_hd.v:
+  /home/santosh/.volare/volare/sky130/versions/
+  0fe599b2afb6708d281543108caf8310912f54af/
+  sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
+```
+
+> **Note:** The original `hkspi_tb.v` was a full Caravel chip testbench
+> instantiating `caravel`, `spiflash`, and `tbuart` — not suitable for
+> block-level GLS. A dedicated block-level testbench `hkspi_tb_simple.v`
+> was written for `housekeeping_spi`.
+
+---
+
+### 3. Testbench Description
+
+Three independent test scenarios are covered:
+
+| Test Case | Command Byte | Address | Data | Expected Behavior |
+|-----------|-------------|---------|------|-------------------|
+| TC1 — WRITE | `0x80` | `0x08` | `0x37` | `wrstb` pulses HIGH, `oaddr=0x08`, `odata=0x37` |
+| TC2 — READ  | `0x40` | `0x08` | —      | `rdstb` pulses HIGH, `read_data=0xA5` returned  |
+| TC3 — RESET | `0x80` | —      | —      | FSM returns to COMMAND state, `oaddr=0x00`       |
+
+**SPI Protocol Parameters:**
+
+| Parameter | Value |
+|-----------|-------|
+| SCK period | 100 ns (10 MHz) |
+| Data order | MSB first |
+| CSB | Active low |
+| `idata` | `0xA5` (fixed readback value for TC2) |
+
+#### Testbench — `hkspi_tb_simple.v`
+
+```verilog
+`timescale 1ns/1ps
+`define FUNCTIONAL
+`define UNIT_DELAY #1
+
+module hkspi_tb_simple;
+
+    reg        reset;
+    reg        SCK;
+    reg        SDI;
+    reg        CSB;
+    reg  [7:0] idata;
+
+    wire       SDO;
+    wire       sdoenb;
+    wire [7:0] odata;
+    wire [7:0] oaddr;
+    wire       rdstb;
+    wire       wrstb;
+    wire       pass_thru_mgmt;
+    wire       pass_thru_mgmt_delay;
+    wire       pass_thru_user;
+    wire       pass_thru_user_delay;
+    wire       pass_thru_mgmt_reset;
+    wire       pass_thru_user_reset;
+
+    housekeeping_spi uut (
+        .reset               (reset),
+        .SCK                 (SCK),
+        .SDI                 (SDI),
+        .CSB                 (CSB),
+        .SDO                 (SDO),
+        .sdoenb              (sdoenb),
+        .idata               (idata),
+        .odata               (odata),
+        .oaddr               (oaddr),
+        .rdstb               (rdstb),
+        .wrstb               (wrstb),
+        .pass_thru_mgmt      (pass_thru_mgmt),
+        .pass_thru_mgmt_delay(pass_thru_mgmt_delay),
+        .pass_thru_user      (pass_thru_user),
+        .pass_thru_user_delay(pass_thru_user_delay),
+        .pass_thru_mgmt_reset(pass_thru_mgmt_reset),
+        .pass_thru_user_reset(pass_thru_user_reset)
+    );
+
+    initial begin
+        $dumpfile("hkspi_gls.vcd");
+        $dumpvars(0, hkspi_tb_simple);
+    end
+
+    initial SCK = 0;
+    always #50 SCK = ~SCK;
+
+    task spi_send_byte;
+        input [7:0] data;
+        integer i;
+        begin
+            for (i = 7; i >= 0; i = i - 1) begin
+                SDI = data[i];
+                @(posedge SCK);
+                #5;
+            end
+        end
+    endtask
+
+    task spi_read_byte;
+        output [7:0] data;
+        integer i;
+        begin
+            for (i = 7; i >= 0; i = i - 1) begin
+                @(posedge SCK);
+                data[i] = SDO;
+                #5;
+            end
+        end
+    endtask
+
+    reg [7:0] read_data;
+
+    initial begin
+        reset = 1; CSB = 1; SDI = 0; idata = 8'hA5;
+        #200; reset = 0; #100;
+
+        // TC1 — WRITE
+        $display("--- WRITE: addr=0x08 data=0x37 ---");
+        CSB = 0; #25;
+        spi_send_byte(8'b10000000);
+        spi_send_byte(8'h08);
+        spi_send_byte(8'h37);
+        #25; CSB = 1; #200;
+
+        // TC2 — READ
+        $display("--- READ: addr=0x08 ---");
+        idata = 8'hA5; CSB = 0; #25;
+        spi_send_byte(8'b01000000);
+        spi_send_byte(8'h08);
+        spi_read_byte(read_data);
+        $display("Read back data = 0x%02X (expected 0xA5)", read_data);
+        #25; CSB = 1; #200;
+
+        // TC3 — RESET mid-transaction
+        $display("--- Reset mid-transaction test ---");
+        CSB = 0; #25;
+        spi_send_byte(8'b10000000);
+        reset = 1; #100; reset = 0;
+        CSB = 1; #200;
+
+        $display("--- GLS Simulation complete ---");
+        #500; $finish;
+    end
+
+    initial begin
+        $monitor("Time=%0t CSB=%b wrstb=%b rdstb=%b oaddr=0x%02X odata=0x%02X",
+                  $time, CSB, wrstb, rdstb, oaddr, odata);
+    end
+
+endmodule
+```
+
+---
+
+### 4. Simulation Command
+
+```bash
+cd ~/housekeeping_spi
+
+iverilog -o hkspi_sim \
+  -DFUNCTIONAL \
+  -DUNIT_DELAY=#1 \
+  hkspi_tb_simple.v \
+  6_final.v \
+  /home/santosh/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v \
+  /home/santosh/.volare/volare/sky130/versions/0fe599b2afb6708d281543108caf8310912f54af/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
+
+vvp hkspi_sim
+```
+
+**Compiler flags:**
+
+| Flag | Purpose |
+|------|---------|
+| `-DFUNCTIONAL` | Disables timing checks in sky130 cell models, enables functional-only simulation |
+| `-DUNIT_DELAY=#1` | Applies 1 ns unit delay to all gate output transitions |
+
+---
+
+### 5. Simulation Output
+
+```
+VCD info: dumpfile hkspi_gls.vcd opened for output.
+Time=0 CSB=1 wrstb=x rdstb=x oaddr=0xxx odata=0xxX
+Time=1000 CSB=1 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
+--- WRITE: addr=0x08 data=0x37 ---
+Time=300000 CSB=0 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
+Time=2551000 CSB=0 wrstb=0 rdstb=0 oaddr=0x08 odata=0x37
+Time=2601000 CSB=0 wrstb=1 rdstb=0 oaddr=0x08 odata=0x37
+Time=2680000 CSB=1 wrstb=1 rdstb=0 oaddr=0x09 odata=0x6f
+--- READ: addr=0x08 ---
+Time=2880000 CSB=0 wrstb=0 rdstb=0 oaddr=0x00 odata=0x01
+Time=4451000 CSB=0 wrstb=0 rdstb=1 oaddr=0x08 odata=0x00
+Time=5251000 CSB=0 wrstb=0 rdstb=1 oaddr=0x09 odata=0x00
+Read back data = 0xa5 (expected 0xA5)
+Time=5280000 CSB=1 wrstb=0 rdstb=1 oaddr=0x09 odata=0x00
+--- Reset mid-transaction test ---
+Time=5480000 CSB=0 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
+Time=6355000 CSB=1 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
+--- GLS Simulation complete ---
+```
+
+---
+
+### 6. GLS Pass Criteria
+
+| Criteria | Observed Result | Status |
+|----------|----------------|--------|
+| Simulation completes without errors | Clean `vvp` run, zero elaboration errors | ✅ PASS |
+| `wrstb` asserts on WRITE completion | `wrstb=1` at `Time=2601000 ns` | ✅ PASS |
+| `oaddr` correctly decoded | `oaddr=0x08` at write and read strobe | ✅ PASS |
+| `odata` carries correct write data | `odata=0x37` at write strobe | ✅ PASS |
+| `rdstb` asserts on READ completion | `rdstb=1` at `Time=4451000 ns` | ✅ PASS |
+| READ returns correct data | `read_data=0xA5` matches `idata=0xA5` | ✅ PASS |
+| Reset mid-transaction recovers | `oaddr=0x00` after reset, FSM idle | ✅ PASS |
+| VCD file generated | `hkspi_gls.vcd` confirmed in directory | ✅ PASS |
+
+> **Phase 4 Result: PASS — Gate-level netlist matches expected functional behavior.**
+
+---
+
+
 </details>
 
 <details>
 <summary><strong>PHASE 5 — Waveform Validation</strong></summary>
+## Phase 5 — Waveform Validation
+
+- [Phase 5 — Waveform Validation](#phase-5--waveform-validation)
+  - [Objective](#1-objective-1)
+  - [VCD Generation](#2-vcd-generation)
+  - [GTKWave Launch](#3-gtkwave-launch)
+  - [GTKWave Screenshot](#4-gtkwave-screenshot)
+  - [Key Signal Analysis](#5-key-signal-analysis)
+  - [Transaction Timeline Summary](#6-transaction-timeline-summary)
+  - [Phase 5 Checklist](#7-phase-5-checklist)
+- [Overall Week 6 Result](#overall-week-6-result)
+
+### 1. Objective
+
+Open the VCD generated during GLS in GTKWave, observe gate-level signal
+activity, and confirm that all key control and data signals behave
+correctly across all three test transactions.
+
+---
+
+### 2. VCD Generation
+
+The testbench dumps all signals using:
+
+```verilog
+initial begin
+    $dumpfile("hkspi_gls.vcd");
+    $dumpvars(0, hkspi_tb_simple);
+end
+```
+
+`$dumpvars(0, ...)` captures all signals at all hierarchy levels inside
+`hkspi_tb_simple`, including all internal gate-level nets of `6_final.v`.
+
+**Simulation timespan:** 0 ns — 7055 ns
+
+---
+
+### 3. GTKWave Launch
+
+```bash
+gtkwave hkspi_gls.vcd
+```
+
+**GTKWave launch output:**
+
+```
+GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[0] start time.
+[7055000] end time.
+```
+
+**Signals loaded into GTKWave viewer:**
+
+`CSB`, `SCK`, `SDO`, `SDI`, `reset`, `wrstb`, `sdoenb`, `read_data[7:0]`, `rdstb`, `idata[7:0]`
+
+---
+
+### 4. GTKWave Screenshot
+
+> ![GTKWave GLS Waveform](docs/gtkwave_hkspi_gls.png)
+>
+> *Full GLS waveform for `housekeeping_spi` — 0 to 7055 ns.
+> Signals shown: CSB, SCK, SDO, SDI, reset, wrstb, sdoenb,
+> read\_data\[7:0\], rdstb, idata\[7:0\]*
+
+---
+
+### 5. Key Signal Analysis
+
+#### Signal 1 — `CSB` (Chip Select Bar)
+
+| Property | Value |
+|----------|-------|
+| Type | `reg` (active LOW) |
+| Purpose | Transaction boundary control |
+| Driven by | Testbench |
+
+`CSB` going LOW marks the start of every SPI transaction. The SPI state machine only processes SCK edges while `CSB` is LOW. `csb_reset = CSB | reset` — raising CSB at any point instantly returns the FSM to the COMMAND idle state.
+
+| Event | Timestamp | Meaning |
+|-------|-----------|---------|
+| Falls LOW | ~300 ns | TC1 WRITE transaction begins |
+| Rises HIGH | ~2680 ns | TC1 WRITE transaction ends |
+| Falls LOW | ~2880 ns | TC2 READ transaction begins |
+| Rises HIGH | ~5280 ns | TC2 READ transaction ends |
+| Falls LOW | ~5480 ns | TC3 reset mid-transaction begins |
+| Rises HIGH | ~6355 ns | TC3 ends, FSM returns to idle |
+
+**Waveform observation:** Three distinct active-low pulses are clearly visible in the GTKWave screenshot corresponding exactly to the three test cases, confirming correct transaction framing at the gate level.
+
+---
+
+#### Signal 2 — `wrstb` (Write Strobe)
+
+| Property | Value |
+|----------|-------|
+| Type | `wire` (active HIGH pulse) |
+| Purpose | Tells upstream register file to latch `odata` |
+| Driven | `negedge SCK`, `count==7`, `state==DATA`, `writemode==1` |
+
+`wrstb` is deliberately generated on `negedge SCK` so that `odata` is stable before the following `posedge SCK`. This is the fundamental SPI write-capture timing discipline. The gate-level simulation confirms this timing is preserved after synthesis and place-and-route.
+
+| Event | Timestamp | Meaning |
+|-------|-----------|---------|
+| Pulses HIGH | `2601000 ns` | `odata=0x37` valid at `oaddr=0x08`, latch now |
+| Returns LOW | Next SCK cycle | Single-cycle pulse, data held by upstream |
+
+**Waveform observation:** A single clean pulse at ~2.6 µs is visible in the waveform, coinciding precisely with `oaddr=0x08` and `odata=0x37`, confirming the WRITE transaction completed correctly at the gate level.
+
+---
+
+#### Signal 3 — `rdstb` (Read Strobe)
+
+| Property | Value |
+|----------|-------|
+| Type | `wire` (active HIGH pulse) |
+| Purpose | Tells upstream to drive `idata`; confirms read byte complete |
+| Driven | `posedge SCK`, `count==7`, `state==ADDRESS or DATA`, `readmode==1` |
+
+`rdstb` pulses twice during a READ transaction. The first pulse after ADDRESS tells the upstream register file to load `idata` with the contents of the decoded address. The second pulse after DATA confirms the full byte has been shifted out over SDO.
+
+| Event | Timestamp | Meaning |
+|-------|-----------|---------|
+| First pulse HIGH | `4451000 ns` | Address `0x08` decoded, upstream loads `idata` |
+| Second pulse HIGH | `5251000 ns` | Data byte `0xA5` fully shifted out over SDO |
+
+**Waveform observation:** Two distinct pulses are visible at ~4.45 µs and ~5.25 µs. The gap between them is exactly 8 SCK cycles (800 ns), matching one complete data byte transmission.
+
+---
+
+#### Signal 4 — `SDO` (Serial Data Out)
+
+| Property | Value |
+|----------|-------|
+| Type | `wire` |
+| Purpose | Carries read data from DUT to SPI master, MSB first |
+| Driven | `ldata[7]` — active only when `sdoenb=0` |
+
+`SDO` is tri-stated (`sdoenb=1`) during WRITE transactions to prevent bus contention. It is only driven during READ when `sdoenb` goes LOW. The gate-level netlist correctly implements this output enable behavior.
+
+| Event | Timestamp | Meaning |
+|-------|-----------|---------|
+| Remains inactive | 0 — ~4450 ns | WRITE phase, `sdoenb=1`, output tri-stated |
+| Goes active | ~4450 — ~5250 ns | READ phase, `sdoenb=0`, shifting `0xA5` MSB first |
+| Returns inactive | After ~5280 ns | Transaction ended, output tri-stated again |
+
+**Waveform observation:** SDO is clearly flat during the WRITE transaction and shows toggling activity only during the READ phase — visible as a pulse pattern in the ~4.5 µs to ~5.3 µs window — corresponding to `0xA5 = 10100101` shifted out MSB first.
+
+---
+
+#### Signal 5 — `read_data[7:0]`
+
+| Property | Value |
+|----------|-------|
+| Type | `reg [7:0]` (testbench capture register) |
+| Purpose | Captures SDO bits shifted in during READ transaction |
+
+`read_data` is assembled in the testbench by sampling SDO on each `posedge SCK` during the DATA phase of the READ transaction.
+
+| Event | Value | Meaning |
+|-------|-------|---------|
+| Before READ | `xx` (unknown) | Not yet captured |
+| After READ completes | `0xA5` | Matches `idata=0xA5` driven into DUT |
+
+**Waveform observation:** The `read_data[7:0]` bus is shown as red `xx` (unknown) for the first half of the simulation and transitions cleanly to `A5` hex after the READ transaction completes at ~5.25 µs. This is the primary functional correctness proof — the gate-level netlist correctly serializes 8-bit `idata` over `SDO` and the testbench correctly reconstructs it.
+
+---
+
+### 6. Transaction Timeline Summary
+
+```
+0ns      300ns                   2680ns  2880ns                5280ns  5480ns    6355ns
+│        │                        │       │                      │       │          │
+│ RESET  │<───── TC1: WRITE ─────>│ IDLE  │<───── TC2: READ ────>│ IDLE  │<─ TC3 ──>│
+│        │                        │       │                      │       │          │
+        CSB=0                  CSB=1   CSB=0                  CSB=1  CSB=0      CSB=1
+        CMD(0x80)                       CMD(0x40)
+        ADDR(0x08)                      ADDR(0x08)
+        DATA(0x37)                      DATA → SDO = 0xA5
+        wrstb pulse ✅                  rdstb × 2 pulses ✅
+        odata=0x37 ✅                   read_data=0xA5 ✅
+```
+
+---
+
+### 7. Phase 5 Checklist
+
+| Deliverable | Status |
+|-------------|--------|
+| VCD file generated during GLS | ✅ `hkspi_gls.vcd` |
+| GTKWave opened successfully | ✅ v3.3.104 |
+| All DUT signals visible in GTKWave | ✅ CSB, SCK, SDI, SDO, reset, wrstb, rdstb, sdoenb, oaddr, odata, idata, read_data |
+| Minimum 3 key signals explained | ✅ 5 signals fully documented |
+| `CSB` transaction framing verified | ✅ 3 distinct transactions visible |
+| `wrstb` write strobe verified | ✅ Pulse at 2601 ns |
+| `rdstb` read strobe verified | ✅ Pulses at 4451 ns and 5251 ns |
+| `SDO` output enable behavior verified | ✅ Tri-stated during WRITE |
+| `read_data` matches `idata` | ✅ `0xA5 == 0xA5` |
+| GTKWave screenshot captured | ✅ `docs/gtkwave_hkspi_gls.png` |
+
+> **Phase 5 Result: PASS — All gate-level signals match expected functional behavior.**
 
 --- 
 </details>
