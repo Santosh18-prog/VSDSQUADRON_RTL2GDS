@@ -1,4 +1,4 @@
-![def](https://github.com/user-attachments/assets/ec99f400-ded6-42c6-a7f8-cab2e17e84e2)# 🚀 VSD-Squadron RTL2GDSII SOC Implementation 
+# 🚀 VSD-Squadron RTL2GDSII SOC Implementation 
 
 ## WEEK-1 (Digital VLSI SoC Design and Planning – Foundation Phase)
 
