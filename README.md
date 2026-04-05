@@ -9369,6 +9369,7 @@ rarely goes right on the first attempt.
 
 ---
 
+![issue](WEEK-6/Phase7/issue.png)
 
 ## Issue 1 — primitives.v and Cell Library Not Found
 
