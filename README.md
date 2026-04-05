@@ -7470,11 +7470,9 @@ make finish      # Fill insertion, DRC, final GDS
 <summary><strong>PHASE 2 — RTL-to-GDS Implementation</strong></summary>
 
 --- 
-# Week 6 — Phase 2 & Phase 3: RTL-to-GDS Implementation and Output Generation
 
 **Selected Block:** `housekeeping_spi.v` — SPI Controller for Caravel SoC  
 **Design Flow:** OpenROAD Flow Scripts (ORFS) — sky130hd  
-**Participant:** Santosh  
 **Program:** VSD Squadron SoC — RTL to GDS  
 
 ---
