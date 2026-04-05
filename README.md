@@ -8470,7 +8470,9 @@ Time=6355000 CSB=1 wrstb=0 rdstb=0 oaddr=0x00 odata=0x00
 
 <details>
 <summary><strong>PHASE 5 — Waveform Validation</strong></summary>
-## Phase 5 — Waveform Validation
+  
+---
+## Table of Contents
 
 - [Phase 5 — Waveform Validation](#phase-5--waveform-validation)
   - [Objective](#1-objective-1)
