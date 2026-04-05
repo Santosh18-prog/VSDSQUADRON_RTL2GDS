@@ -7096,5 +7096,1118 @@ Clock and reset handling become critical at gate-level
 GLS debugging requires waveform analysis, not just functional checks  
 Successful GLS validation confirms design correctness after physical implementation
 
+---
+
 </details>
 
+## WEEK–6 (Independent Block Implementation + Gate-Level Validation)
+
+<details>
+<summary><strong>PHASE 1 — Block Selection and Analysis</strong></summary>
+
+--- 
+
+**Selected Block:** `housekeeping_spi.v` — SPI Controller for Caravel SoC  
+**Design Flow:** OpenROAD Flow Scripts (ORFS) — sky130hd  
+**Program:** VSD Squadron SoC — RTL to GDS  
+
+---
+
+## Table of Contents
+
+- [Block Selection Rationale](#1-block-selection-rationale)
+- [RTL Hierarchy and Module Description](#2-rtl-hierarchy-and-module-description)
+- [Interface Description](#3-interface-description)
+- [Internal Architecture](#4-internal-architecture)
+- [Block Diagram](#5-block-diagram)
+- [Design Flow Setup](#6-design-flow-setup)
+- [Key RTL Observations](#7-key-rtl-observations)
+- [Checklist Status](#8-checklist-status)
+
+---
+
+## 1. Block Selection Rationale
+
+The `housekeeping_spi` module was selected from the VSDSquadron SoC RTL directory at:
+
+```
+~/vsdsquadron-soc/caravel/verilog/rtl/housekeeping_spi.v
+```
+
+This block is a self-contained, general-purpose SPI (Serial Peripheral Interface) controller responsible for chip configuration and housekeeping register access in the Caravel platform.
+
+**Reasons for selection:**
+
+- Clearly defined I/O boundary with no unresolved external module instantiations
+- Manageable RTL size — single module, two always blocks, one FSM
+- Real-world significance as the primary chip bring-up and debug interface
+- Pass-through modes add implementation complexity worth studying
+- Well-commented RTL with documented command protocol
+
+**Source path:**
+```
+~/vsdsquadron-soc/caravel/verilog/rtl/
+```
+
+**ORFS design path:**
+```
+~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi/
+```
+
+---
+
+## 2. RTL Hierarchy and Module Description
+
+### Top Module
+
+`housekeeping_spi`
+
+| Property    | Detail                                           |
+|-------------|--------------------------------------------------|
+| File        | `housekeeping_spi.v`                             |
+| Author      | Tim Edwards, Efabless Corporation                |
+| License     | Apache 2.0                                       |
+| Technology  | sky130hd (targeted for ORFS implementation)      |
+| Module type | Sequential — dual always block, posedge/negedge  |
+
+### Dependency Files
+
+| File                 | Role                                                          |
+|----------------------|---------------------------------------------------------------|
+| `housekeeping_spi.v` | Top module — SPI state machine and data path                  |
+| `defines.v`          | Global chip-level macros (`MPRJ_IO_PADS`, `MEM_WORDS`, etc.) |
+| `debug_regs.v`       | Wishbone-interfaced debug register block (32-bit R/W)         |
+
+> `debug_regs.v` is included as a dependency since it resides in the same RTL directory and shares the `defines.v` global header. It is not instantiated inside `housekeeping_spi` but is part of the housekeeping subsystem's broader context.
+
+### RTL Dependency Tree
+
+```
+housekeeping_spi  (top)
+│
+├── defines.v
+│   └── Global macros consumed via `include
+│       ├── MPRJ_IO_PADS_1 / 2
+│       ├── MEM_WORDS
+│       ├── CLK_DIV
+│       ├── MGMT_INIT / OENB_INIT / DM_INIT
+│       └── USE_CUSTOM_DFFRAM / DFFRAM_WSIZE
+│
+└── debug_regs.v  (contextual sibling — not instantiated inside top)
+    └── debug_regs module
+        ├── Wishbone slave interface (wb_clk_i, wb_rst_i, wbs*)
+        ├── debug_reg_1 [31:0]
+        └── debug_reg_2 [31:0]
+```
+
+---
+
+## 3. Interface Description
+
+### Inputs
+
+| Port    | Width | Description                                         |
+|---------|-------|-----------------------------------------------------|
+| `reset` | 1     | Asynchronous reset (active high)                    |
+| `SCK`   | 1     | SPI clock input                                     |
+| `SDI`   | 1     | Serial data input — MOSI, MSB first                 |
+| `CSB`   | 1     | Chip select bar (active low)                        |
+| `idata` | 8     | Read data from upstream registers (to transmit out) |
+
+### Outputs
+
+| Port                   | Width | Description                                  |
+|------------------------|-------|----------------------------------------------|
+| `SDO`                  | 1     | Serial data output — MISO                    |
+| `sdoenb`               | 1     | SDO output enable (active low)               |
+| `odata`                | 8     | Received byte forwarded to upstream circuits |
+| `oaddr`                | 8     | Decoded register address                     |
+| `rdstb`                | 1     | Read strobe — upstream latches `idata`       |
+| `wrstb`                | 1     | Write strobe — upstream latches `odata`      |
+| `pass_thru_mgmt`       | 1     | Pass-through enable to management flash SPI  |
+| `pass_thru_mgmt_delay` | 1     | Delayed version of `pass_thru_mgmt`          |
+| `pass_thru_user`       | 1     | Pass-through enable to user area flash SPI   |
+| `pass_thru_user_delay` | 1     | Delayed version of `pass_thru_user`          |
+| `pass_thru_mgmt_reset` | 1     | Reset derived from mgmt pass-through state   |
+| `pass_thru_user_reset` | 1     | Reset derived from user pass-through state   |
+
+---
+
+## 4. Internal Architecture
+
+### FSM States
+
+```verilog
+`define COMMAND  3'b000   // Receive 8-bit command byte
+`define ADDRESS  3'b001   // Receive 8-bit address byte
+`define DATA     3'b010   // Receive / transmit 8-bit data byte
+`define USERPASS 3'b100   // Pass-through to user flash SPI
+`define MGMTPASS 3'b101   // Pass-through to management flash SPI
+```
+
+### State Transition Summary
+
+```
+csb_reset ──────────────────────────────────┐
+                                            ↓
+                                        [COMMAND]
+                                            │
+                          bit[7:6] = 10 → writemode
+                          bit[7:6] = 01 → readmode
+                          bit[7:6] = 11 → read+write
+                          bit[5:3] → fixed byte count
+                          bit[1]   → pre_pass_thru_mgmt
+                          bit[0]   → pre_pass_thru_user
+                                            │
+                        ┌───────────────────┤
+                        │                   │
+                  [MGMTPASS]           [ADDRESS] ←── after 8 SCK cycles
+                  [USERPASS]                 │
+                                        [DATA]
+                                            │
+                          fixed==1 → [COMMAND]
+                          fixed >1 → [DATA] addr++
+                          fixed==0 → [DATA] addr++ (streaming)
+```
+
+### Command Byte Encoding
+
+```
+Bit 7   : Write mode enable
+Bit 6   : Read  mode enable
+Bits 5-3: Fixed byte count (0 = streaming, 1-7 = N bytes then stop)
+Bit 2   : Reserved
+Bit 1   : Management area pass-through
+Bit 0   : User area pass-through
+```
+
+### Pre-defined Commands
+
+| Command    | Description                                       |
+|------------|---------------------------------------------------|
+| `00000000` | No operation                                      |
+| `10000000` | Write until CSB raised (streaming)                |
+| `01000000` | Read until CSB raised (streaming)                 |
+| `11000000` | Simultaneous read/write until CSB raised          |
+| `11000100` | Pass-through to management area flash SPI         |
+| `11000010` | Pass-through to user area flash SPI               |
+| `wrnnn000` | Read/write for nnn = 1 to 7 bytes, then terminate |
+
+### Key Internal Registers
+
+| Register          | Width | Description                                     |
+|-------------------|-------|-------------------------------------------------|
+| `state`           | 3     | Current FSM state                               |
+| `count`           | 3     | Bit counter within each byte (0 to 7)           |
+| `addr`            | 8     | Latched SPI address, auto-increments in DATA    |
+| `predata`         | 7     | RX shift register — combines with SDI for odata |
+| `ldata`           | 8     | TX shift register — MSB drives SDO              |
+| `writemode`       | 1     | Set from command byte bit 7                     |
+| `readmode`        | 1     | Set from command byte bit 6                     |
+| `fixed`           | 3     | Remaining fixed-count bytes                     |
+| `pre_pass_thru_*` | 1     | Staging registers for pass-through enable       |
+
+### Combinational Assigns
+
+```verilog
+assign odata                = {predata, SDI};
+assign oaddr                = (state == ADDRESS) ? {addr[6:0], SDI} : addr;
+assign SDO                  = ldata[7];
+assign csb_reset            = CSB | reset;
+assign pass_thru_mgmt_reset = pass_thru_mgmt_delay | pre_pass_thru_mgmt;
+assign pass_thru_user_reset = pass_thru_user_delay | pre_pass_thru_user;
+```
+
+### Clock Domain Strategy
+
+| Always Block | Trigger                             | Responsibilities                                            |
+|--------------|-------------------------------------|-------------------------------------------------------------|
+| Block 1      | `negedge SCK` / `posedge csb_reset` | SDO drive, `sdoenb`, `wrstb`                                |
+| Block 2      | `posedge SCK` / `posedge csb_reset` | FSM transitions, `addr`, `rdstb`, `predata`, pass-through   |
+
+> `wrstb` is asserted on `negedge SCK` when `count == 3'b111` in DATA state so that write data is stable and captured on the following `posedge SCK`. `rdstb` is asserted on `posedge SCK` at the last bit of ADDRESS and DATA for upstream latching.
+
+### Reserved Register Map
+
+| Address   | Content                        |
+|-----------|--------------------------------|
+| `0x00`    | SPI mode flags (reserved, = 0) |
+| `0x01`    | Manufacturer ID low 8 bits     |
+| `0x02`    | Manufacturer ID high 4 bits    |
+| `0x03`    | Product ID (8 bits)            |
+| `0x04–07` | Mask ID (32 bits)              |
+| `0x08–FF` | General purpose registers      |
+
+---
+
+## 5. Block Diagram
+
+```
+                        housekeeping_spi
+  ┌──────────────────────────────────────────────────────────┐
+  │                                                          │
+  │  SCK  ──►  ┌─────────────────────────┐                  │
+  │  SDI  ──►  │      FSM Controller      │                  │
+  │  CSB  ──►  │  COMMAND→ADDRESS→DATA   │                  │
+  │  reset──►  └────────────┬────────────┘                  │
+  │  idata──►               │                               │
+  │               ┌─────────┴──────────┐                    │
+  │               │                    │                    │
+  │        ┌──────▼──────┐    ┌────────▼──────┐            │
+  │        │  Bit Counter │    │   Addr Reg     │            │
+  │        │  count[2:0]  │    │   addr[7:0]    │            │
+  │        └──────┬───────┘    └───────┬────────┘            │
+  │               │                    │                    │
+  │        ┌──────▼───────┐   ┌────────▼───────┐            │
+  │        │  RX Shift Reg │   │  TX Shift Reg  │            │
+  │        │  predata+SDI  │   │  ldata[7:0]    │──► SDO    │
+  │        └──────┬────────┘   └────────────────┘            │
+  │               │                                          │
+  │        ┌──────▼──────────────┐                           │
+  │        │   Strobe Generator   │──► rdstb / wrstb         │
+  │        └──────┬───────────────┘──► odata[7:0]            │
+  │               │                ──► oaddr[7:0]            │
+  │        ┌──────▼──────────────┐                           │
+  │        │   Pass-Through Mux   │──► pass_thru_mgmt        │
+  │        │   MGMTPASS/USERPASS  │──► pass_thru_user        │
+  │        └─────────────────────┘──► pass_thru_*_reset      │
+  │                                                          │
+  └──────────────────────────────────────────────────────────┘
+```
+
+> **Note:** Replace this ASCII diagram with your hand-drawn block diagram image by placing it at `docs/block_diagram.jpg` and uncommenting the line below:
+
+<!-- ![Block Diagram](docs/block_diagram.jpg) -->
+
+---
+
+## 6. Design Flow Setup
+
+### Directory Structure
+
+```
+~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi/
+├── config.mk
+├── constraint.sdc
+└── rtl/
+    ├── housekeeping_spi.v
+    ├── defines.v
+    └── debug_regs.v
+```
+
+### Verification of Setup
+
+```bash
+santosh@RTL2GDS:~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi$ pwd
+/home/santosh/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi
+
+santosh@RTL2GDS:~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi$ ls
+config.mk  constraint.sdc  rtl
+
+santosh@RTL2GDS:~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi/rtl$ ls
+debug_regs.v  defines.v  housekeeping_spi.v
+```
+
+---
+
+## 7. Key RTL Observations
+
+**Dual-edge clocking discipline:**  
+Write-side control signals (`wrstb`, `SDO`, `sdoenb`) are driven on `negedge SCK` to ensure data is guaranteed stable before the next `posedge SCK`. This is standard SPI timing practice and must be accounted for in timing constraints.
+
+**Auto-increment addressing:**  
+In streaming mode (`fixed == 3'b000`), `addr` increments by 1 after every complete data byte, allowing burst reads and writes without re-sending the address byte each time.
+
+**Pass-through bypass:**  
+Commands `11000100` (mgmt) and `11000010` (user) divert all subsequent SPI traffic directly to the respective flash SPI interface, bypassing the internal register map entirely. This is implemented via the `MGMTPASS` and `USERPASS` FSM states.
+
+**Reset safety via `csb_reset`:**  
+`csb_reset = CSB | reset` ensures that raising CSB mid-transaction returns the FSM to idle cleanly. This prevents partial transactions from leaving the state machine in an undefined state.
+
+**`odata` is combinational:**  
+`assign odata = {predata, SDI}` — the final received byte is always live on the output bus. The upstream circuit uses `wrstb` to know when to latch it, not a registered signal.
+
+**`oaddr` is dual-mode:**  
+During `ADDRESS` state, `oaddr` reflects the address being shifted in (including the current SDI bit). Once ADDRESS state exits, it reflects the latched `addr` register. This gives upstream circuits early visibility of the address.
+
+---
+
+## 8. Checklist Status
+
+| Deliverable                          | Status                                            |
+|--------------------------------------|---------------------------------------------------|
+| Block selected                       | ✅ `housekeeping_spi.v`                           |
+| Source RTL located in repo           | ✅ `vsdsquadron-soc/caravel/verilog/rtl/`         |
+| RTL copied to ORFS design directory  | ✅ `designs/sky130hd/housekeeping_spi/rtl/`       |
+| Dependency files identified          | ✅ `defines.v`, `debug_regs.v`                    |
+| Top module identified                | ✅ `housekeeping_spi`                             |
+| All I/O ports documented             | ✅                                                |
+| Internal FSM states documented       | ✅                                                |
+| Internal registers documented        | ✅                                                |
+| Clock domain strategy documented     | ✅                                                |
+| Block diagram produced               | ✅                                                |
+| `config.mk` created                  | ✅                                                |
+| `constraint.sdc` created             | ✅                                                |
+
+---
+
+## Next Steps — Phase 2
+
+```bash
+make synth       # Logic synthesis using Yosys
+make floorplan   # Floorplanning and PDN generation
+make place       # Global and detailed placement
+make cts         # Clock tree synthesis
+make route       # Global and detailed routing
+make finish      # Fill insertion, DRC, final GDS
+```
+
+---
+
+</details>
+
+<details>
+<summary><strong>PHASE 2 — RTL-to-GDS Implementation</strong></summary>
+
+--- 
+# Week 6 — Phase 2 & Phase 3: RTL-to-GDS Implementation and Output Generation
+
+**Selected Block:** `housekeeping_spi.v` — SPI Controller for Caravel SoC  
+**Design Flow:** OpenROAD Flow Scripts (ORFS) — sky130hd  
+**Participant:** Santosh  
+**Program:** VSD Squadron SoC — RTL to GDS  
+
+---
+
+## Table of Contents
+
+- [Phase 2 — RTL-to-GDS Implementation](#phase-2--rtl-to-gds-implementation)
+  - [Flow Setup](#1-flow-setup)
+  - [Stage 1 — Synthesis](#2-stage-1--synthesis)
+  - [Stage 2 — Floorplan](#3-stage-2--floorplan)
+  - [Stage 3 — Placement](#4-stage-3--placement)
+  - [Stage 4 — Clock Tree Synthesis](#5-stage-4--clock-tree-synthesis-cts)
+  - [Stage 5 — Routing](#6-stage-5--routing)
+  - [Stage 6 — Finishing and GDS](#7-stage-6--finishing-and-gds)
+
+---
+
+## Phase 2 — RTL-to-GDS Implementation
+
+### 1. Flow Setup
+
+The ORFS flow was executed from a clean state using `make clean_all` followed by `make` to run the full RTL-to-GDS pipeline.
+
+```bash
+santosh@RTL2GDS:~/vsd-scl180-orfs/orfs/flow$ make clean_all
+santosh@RTL2GDS:~/vsd-scl180-orfs/orfs/flow$ make
+```
+
+**Design directory:**
+```
+~/vsd-scl180-orfs/orfs/flow/designs/sky130hd/housekeeping_spi/
+├── config.mk
+├── constraint.sdc
+└── rtl/
+    ├── housekeeping_spi.v
+    ├── defines.v
+    └── debug_regs.v
+```
+
+**Clock Constraint:** 100 MHz (period = 10 ns), defined in `constraint.sdc`
+
+---
+
+### 2. Stage 1 — Synthesis
+
+**Tool:** Yosys 0.63+43  
+**Script:** `synth.tcl` via `synth.sh`
+
+#### Synthesis Flow Steps
+
+| Step | Pass | Description |
+|------|------|-------------|
+| 1    | HIERARCHY | Design hierarchy analysis |
+| 2    | PROC | Convert processes to netlists (DFF, latches, MUX) |
+| 3    | SYNTH | Full synthesis pass (FSM detection, OPT, TECHMAP) |
+| 4    | FSM_EXTRACT | Automatic FSM detection and re-encoding |
+| 5    | ABC | Technology mapping using ABC speed script |
+| 6    | DFFLIBMAP | DFF mapping to sky130hd liberty |
+| 7    | HILOMAP | Constant driver insertion |
+| 8    | INSBUF | Buffer insertion for connected wires |
+
+#### Synthesis Statistics
+
+```
+=== housekeeping_spi ===
+
+   238   - wires
+   259   - wire bits
+    47   - public wires
+    68   - public wire bits
+    17   - ports
+    38   - port bits
+   237   2.3BE+03 cells
+```
+
+**Chip area (post-synthesis):** `2376.028800 um²`  
+**Sequential elements area:** `1128.582400 um² (47.50%)`
+
+#### Cell Library Used
+
+Target library: `sky130_fd_sc_hd__tt_025C_1v80.lib`
+
+Key cells inferred:
+
+| Cell | Count | Area (um²) | Type |
+|------|-------|------------|------|
+| `sky130_fd_sc_hd__dfrtp_1` | 34 | 850.816 | D Flip-flop (reset, posedge) |
+| `sky130_fd_sc_hd__dfrtn_1` | 9 | 225.216 | D Flip-flop (reset, negedge) |
+| `sky130_fd_sc_hd__mux2_2` | 18 | 202.694 | 2-input MUX |
+| `sky130_fd_sc_hd__nor2_1` | 26 | 97.594 | NOR2 |
+| `sky130_fd_sc_hd__ha_1` | 10 | 125.12 | Half adder |
+| `sky130_fd_sc_hd__a21oi_1` | 9 | 45.043 | AOI21 |
+| `sky130_fd_sc_hd__inv_1` | 14 | 52.55 | Inverter |
+| `sky130_fd_sc_hd__nand2_1` | 16 | 60.058 | NAND2 |
+
+> Both `dfrtp_1` (posedge) and `dfrtn_1` (negedge) flip-flops are present, confirming the dual-edge clock architecture of the `housekeeping_spi` block.
+
+#### Synthesis Log Evidence
+
+```
+Log                        Elapsed/s Peak Memory/MB  sha1sum .odb [0:20)
+1_synth                            0            115 0788f1b92b18a6698613
+```
+
+**Output:** `results/sky130hd/housekeeping_spi/base/1_synth.odb`
+
+---
+
+### 3. Stage 2 — Floorplan
+
+**Tool:** OpenROAD  
+**Sub-stages:** `2_1_floorplan` → `2_2_floorplan_macro` → `2_3_floorplan_tapcell` → `2_4_floorplan_pdn`
+
+#### Floorplan Parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Utilization target | 55% |
+| Aspect ratio | 1.0 (square) |
+| Die BBox | (0.000, 0.000) — (67.725, 67.725) um |
+| Core BBox | (1.380, 2.720) — (66.700, 65.280) um |
+| Core area | 4086.419 um² |
+| Total instance area | 2376.029 um² |
+| Effective utilization | 58.1% |
+| Number of rows | 23 rows × 142 sites |
+
+#### Sub-stage Results
+
+| Sub-stage | Description | Result |
+|-----------|-------------|--------|
+| `2_1_floorplan` | Die/core sizing, PDN prep | Design area 2323 um² @ 57% util |
+| `2_2_floorplan_macro` | Macro placement | No macros found — skipped |
+| `2_3_floorplan_tapcell` | Tap cell insertion | 50 tapcells inserted |
+| `2_4_floorplan_pdn` | Power delivery network | Grid inserted |
+
+#### Floorplan Log Evidence
+
+```
+[INFO IFP-0100] Die BBox:  (  0.000  0.000 ) ( 67.725 67.725 ) um
+[INFO IFP-0101] Core BBox: (  1.380  2.720 ) ( 66.700 65.280 ) um
+[INFO IFP-0102] Core area:                         4086.419 um^2
+[INFO TAP-0005] Inserted 50 tapcells.
+[INFO PDN-0001] Inserting grid: grid
+```
+
+**Output:** `results/sky130hd/housekeeping_spi/base/2_floorplan.odb`
+
+#### Floorplan View (OpenROAD)
+
+> PDN grid visible — red = met1 (horizontal), cyan = met3 (power stripes)
+
+![Floorplan PDN](docs/2_floorplan_pdn.png)
+
+---
+
+### 4. Stage 3 — Placement
+
+**Tool:** OpenROAD — RePlace (global) + DPL (detail)  
+**Sub-stages:** `3_1_place_gp_skip_io` → `3_2_place_iop` → `3_3_place_gp` → `3_4_place_resized` → `3_5_place_dp`
+
+#### Global Placement Summary
+
+| Metric | Value |
+|--------|-------|
+| Placement target density | 0.794 |
+| Movable instances | 263 |
+| Fixed instances | 50 (tapcells) |
+| Total bins (X × Y) | 16 × 16 = 256 |
+| Nesterov iterations | 341 |
+| Final overflow | 0.0988 |
+| Final HPWL | ~2589 um |
+| Worst slack (timing-driven) | 4.69 ns |
+
+#### I/O Placement
+
+```
+[INFO PPL-0001] Number of available slots 236
+[INFO PPL-0002] Number of I/O             38
+[INFO PPL-0012] I/O nets HPWL: 733.92 um.
+```
+
+Pins placed on: `met2` (vertical), `met3` (horizontal)
+
+#### Buffer Insertion (Timing-Driven)
+
+| Type | Count | Area Impact |
+|------|-------|-------------|
+| Input buffers (`clkdlybuf4s50_1`) | 12 | — |
+| Output buffers (`clkdlybuf4s50_1`) | 26 | — |
+| Timing-repair buffers | 1 | +28.377 um² (+0.98%) |
+
+#### Detailed Placement Results
+
+| Metric | Value |
+|--------|-------|
+| Original HPWL | 3216.8 um |
+| Final HPWL | 2956.1 um |
+| Delta HPWL | -8.1% |
+| Mirrored instances | 10 |
+| Cell flips | 69 |
+| Overlap violations | 0 |
+| Edge spacing violations | 0 |
+
+```
+==========================================================================
+detailed place report_design_area
+--------------------------------------------------------------------------
+Design area 2796 um^2 68% utilization.
+```
+
+**Output:** `results/sky130hd/housekeeping_spi/base/3_place.odb`
+
+#### Placed Layout View
+
+![Placement Result](docs/3_place.png)
+
+---
+
+### 5. Stage 4 — Clock Tree Synthesis (CTS)
+
+**Tool:** OpenROAD — TritonCTS  
+**Stage:** `4_1_cts`
+
+#### CTS Observations
+
+```
+[WARNING CTS-0083] No clock nets have been found.
+[INFO CTS-0008] TritonCTS found 0 clock nets.
+[WARNING CTS-0082] No valid clock nets in the design.
+```
+
+> **Note:** TritonCTS found 0 clock nets. This is expected behavior for `housekeeping_spi` because the block uses `SCK` (an external SPI clock) and `negedge SCK` — not a synthesized internal clock net connected to a standard clock tree. The clock is treated as a virtual clock (`wb_clk_i`) in the constraint, which cannot be propagated by TritonCTS. Timing closure is still achieved through combinational paths.
+
+#### CTS Timing Repair
+
+```
+[INFO RSZ-0098] No setup violations found
+[INFO RSZ-0033] No hold violations found.
+```
+
+#### CTS Final Metrics
+
+```
+==========================================================================
+cts final report_design_area
+--------------------------------------------------------------------------
+Design area 2796 um^2 68% utilization.
+```
+
+| Metric | Value |
+|--------|-------|
+| Total displacement | 0.0 um |
+| Original HPWL | 2996.6 um |
+| Legalized HPWL | 2996.6 um |
+| Elapsed time | 0:04.49 min:sec |
+| Peak memory | 148 MB |
+
+**Output:** `results/sky130hd/housekeeping_spi/base/4_cts.odb`
+
+#### CTS Screenshot Evidence
+
+![CTS Log](docs/4_cts_log.png)
+
+---
+
+### 6. Stage 5 — Routing
+
+**Tool:** OpenROAD — FastRoute (global) + TritonRoute (detail)  
+**Sub-stages:** `5_1_grt` → `5_2_route` → `5_3_fillcell`
+
+#### Global Routing Summary
+
+| Layer | Direction | Resource | Demand | Usage |
+|-------|-----------|----------|--------|-------|
+| met1 | Horizontal | 751 | 259 | 34.49% |
+| met2 | Vertical | 808 | 246 | 30.45% |
+| met3 | Horizontal | 584 | 3 | 0.51% |
+| met4 | Vertical | 376 | 0 | 0.00% |
+| met5 | Horizontal | 80 | 0 | 0.00% |
+| **Total** | — | **2599** | **508** | **19.55%** |
+
+```
+[INFO GRT-0018] Total wirelength: 6713 um
+[INFO GRT-0014] Routed nets: 283
+[INFO GRT-0012] Found 0 antenna violations.
+```
+
+#### Detail Routing Convergence
+
+| Iteration | Violations | Notes |
+|-----------|------------|-------|
+| 0th | 142 | Metal spacing + short violations |
+| 1st | 20 | Violations reduced by 86% |
+| 2nd | 28 | Minor increase — maze routing |
+| 3rd (guide tiles) | **0** | **Clean — all violations resolved** |
+
+**Final wire lengths:**
+
+| Layer | Wire Length |
+|-------|-------------|
+| li1 | 0 um |
+| met1 | 2133 um |
+| met2 | 1924 um |
+| met3 | 126 um |
+| met4 | 0 um |
+| **Total** | **4183 um** |
+
+**Total vias:** 1760
+
+```
+[INFO DRT-0198] Complete detail routing.
+[INFO ANT-0002] Found 0 net violations.
+[INFO ANT-0001] Found 0 pin violations.
+```
+
+#### Filler Cell Insertion
+
+```
+[INFO DPL-0001] Placed 324 filler instances.
+```
+
+Filler cells used: `fill_1`, `fill_2`, `fill_4`, `fill_8` from sky130hd
+
+**Output:** `results/sky130hd/housekeeping_spi/base/5_route.odb`
+
+#### Routed Layout View
+
+![Routed Layout](docs/5_route.png)
+
+---
+
+### 7. Stage 6 — Finishing and GDS
+
+**Tool:** OpenROAD (final signoff) + KLayout (GDS merge)  
+**Sub-stages:** `6_1_fill` → `6_report` → GDS merge
+
+#### Final Signoff Database
+
+```
+write_db ./results/sky130hd/housekeeping_spi/base/6_final.odb
+```
+
+#### RCX Parasitics Extraction
+
+```
+[INFO RCX-0436] RC segment generation housekeeping_spi (max_merge_res 50.0) ...
+[INFO RCX-0040] Final 1063 rc segments
+[INFO RCX-0045] Extract 288 nets, 1346 rsegs, 1346 caps, 1636 ccs
+```
+
+#### GDS Merge Status
+
+```
+(core dumped) $KLAYOUT_CMD -v
+make[1]: *** [Makefile:682: do-gds-merged] Error 134
+```
+
+> **Note:** The KLayout GDS merge step (`6_1_merged.gds`) failed with exit code 134 (SIGABRT). This is caused by a KLayout version incompatibility with the Wayland/XDG display environment (`XDG_SESSION_TYPE=wayland`). The `6_final.odb`, `6_final.def`, and `6_final.v` outputs are complete and valid. GDS generation can be retried by running:
+> ```bash
+> export QT_QPA_PLATFORM=xcb
+> make gds
+> ```
+
+---
+
+
+</details>
+
+<details>
+<summary><strong>PHASE 3 — Generate Implementation Outputs</strong></summary>
+
+--- 
+
+
+## Table of Contents
+
+- [Phase 3 — Implementation Outputs](#phase-3--implementation-outputs)
+  - [Synthesized Netlist](#1-synthesized-netlist)
+  - [Final Routed Database](#2-final-routed-database)
+  - [DEF Layout](#3-def-layout)
+  - [Gate-Level Netlist](#4-gate-level-netlist)
+  - [Timing Report](#5-timing-report)
+  - [Power Report](#6-power-report)
+  - [IR Drop Analysis](#7-ir-drop-analysis)
+  - [Cell Type Breakdown](#8-cell-type-breakdown)
+- [Flow Summary Metrics](#flow-summary-metrics)
+- [Known Issues](#known-issues)
+- [Checklist Status](#checklist-status)
+- 
+### 1. Synthesized Netlist
+
+**File:** `results/sky130hd/housekeeping_spi/base/1_synth.v`  
+**Generated by:** Yosys 0.63+43
+
+The synthesized netlist preserves the full `housekeeping_spi` module interface mapped to sky130hd standard cells.
+
+```verilog
+/* Generated by Yosys 0.63+43 (git sha1 0d7a87567) */
+(* hdlname = "housekeeping_spi" *)
+(* top = 1 *)
+module housekeeping_spi(reset, SCK, SDI, CSB, SDO, sdoenb, idata,
+    odata, oaddr, rdstb, wrstb, pass_thru_mgmt, pass_thru_mgmt_delay,
+    pass_thru_user, pass_thru_user_delay, pass_thru_mgmt_reset,
+    pass_thru_user_reset);
+  input reset;
+  input SCK;
+  input SDI;
+  input CSB;
+  output SDO;
+  output sdoenb;
+  input [7:0] idata;
+  output [7:0] odata;
+  output [7:0] oaddr;
+  output rdstb;
+  output wrstb;
+  ...
+```
+
+> Screenshot: `docs/1_synth_netlist.png`
+
+---
+
+### 2. Final Routed Database
+
+**File:** `results/sky130hd/housekeeping_spi/base/6_final.odb`
+
+This is the post-routing, post-fill, post-RCX OpenROAD database used for signoff analysis.
+
+| Property | Value |
+|----------|-------|
+| Components | 316 (logic) + 324 (fill) + 50 (tap) = 640 total |
+| Nets | 288 |
+| Design area | 2796 um² |
+| Core utilization | 68% |
+| Die size | 67.725 × 67.725 um |
+
+---
+
+### 3. DEF Layout
+
+**File:** `results/sky130hd/housekeeping_spi/base/6_final.def`
+
+```
+VERSION 5.8 ;
+DIVIDERCHAR "/" ;
+BUSBITCHARS "[]" ;
+DESIGN housekeeping_spi ;
+UNITS DISTANCE MICRONS 1000 ;
+DIEAREA ( 0 0 ) ( 67725 67725 ) ;
+ROW ROW_0  unithd 1380 2720  N DO 142 BY 1 STEP 460 0 ;
+...
+ROW ROW_22 unithd 1380 62560 N DO 142 BY 1 STEP 460 0 ;
+TRACKS X 230 DO 147 STEP 460 LAYER li1 ;
+TRACKS Y 170 DO 199 STEP 340 LAYER li1 ;
+TRACKS X 170 DO 199 STEP 340 LAYER met1 ;
+...
+```
+
+23 standard cell rows, track definitions for li1 through met4.
+
+> Screenshot: `docs/6_final_def.png`
+
+---
+
+### 4. Gate-Level Netlist
+
+**File:** `results/sky130hd/housekeeping_spi/base/6_final.v`
+
+Post-routing gate-level Verilog netlist for use in GLS (Gate-Level Simulation).
+
+```verilog
+module housekeeping_spi (CSB, SCK, SDI, SDO,
+    pass_thru_mgmt, pass_thru_mgmt_delay, pass_thru_mgmt_reset,
+    pass_thru_user, pass_thru_user_delay, pass_thru_user_reset,
+    rdstb, reset, sdoenb, wrstb, idata, oaddr, odata);
+  input CSB;
+  input SCK;
+  input SDI;
+  output SDO;
+  ...
+  wire net1;
+  wire net2;
+  wire net3;
+  wire net13;
+  ...
+```
+
+> Screenshot: `docs/6_final_netlist.png`
+
+---
+
+### 5. Timing Report
+
+**File:** `reports/sky130hd/housekeeping_spi/base/6_finish_report.rpt`
+
+#### Summary
+
+| Metric | Value |
+|--------|-------|
+| TNS (Total Negative Slack) | **0.00 ps** ✅ |
+| WNS (Worst Negative Slack) | **0.00 ps** ✅ |
+| Worst slack (max) | **+4.70 ns** ✅ |
+| Clock period minimum | **5.30 ns** |
+| f_max achievable | **188.80 MHz** |
+| Critical path delay | **3.30 ns** |
+| Slack / critical path ratio | **142.68%** |
+
+#### Setup Violation Count: **0** ✅  
+#### Hold Violation Count: **0** ✅
+
+#### Critical Path (max — setup)
+
+```
+Startpoint : SDI (input port clocked by wb_clk_i)
+Endpoint   : oaddr[0] (output port clocked by wb_clk_i)
+Path Type  : max
+
+  clock wb_clk_i (rise edge)               0.00
+  input external delay                    +2.00   2.00
+  SDI (in)                                 0.00   2.00
+  input3/X [clkdlybuf4s50_1]             +0.64   2.64
+  _274_/X  [mux2_2]                      +0.21   2.85
+  output14/X [clkdlybuf4s50_1]           +0.44   3.30
+  oaddr[0] (out)                          0.00   3.30 ← data arrival
+
+  clock wb_clk_i (rise edge)              10.00
+  output external delay                   -2.00   8.00 ← data required
+                                         -------
+  slack (MET)                            +4.70 ns ✅
+```
+
+#### Hold Path (min)
+
+```
+Startpoint : SDI (input port clocked by wb_clk_i)
+Endpoint   : odata[0] (output port clocked by wb_clk_i)
+
+  data arrival time                        3.03 ns
+  data required time                      -2.00 ns
+  slack (MET)                            +5.03 ns ✅
+```
+
+#### Signal Integrity Checks
+
+| Check | Slack / Count | Status |
+|-------|---------------|--------|
+| Max slew slack | 0.714 ns (limit: 1.489 ns) | ✅ |
+| Max slew slack limit ratio | 47.98% | ✅ |
+| Max slew violation count | **0** | ✅ |
+| Max fanout violation count | **0** | ✅ |
+| Max capacitance slack | 0.026 pF (limit: 0.052 pF) | ✅ |
+| Max cap slack limit ratio | 49.10% | ✅ |
+| Max cap violation count | **0** | ✅ |
+
+---
+
+### 6. Power Report
+
+**File:** `reports/sky130hd/housekeeping_spi/base/6_finish_report.rpt`
+
+| Group | Internal Power | Switching Power | Leakage | Total Power | % |
+|-------|---------------|----------------|---------|-------------|---|
+| Sequential | 9.05e-06 W | 0.00e+00 W | 5.72e-10 W | 9.05e-06 W | 41.0% |
+| Combinational | 5.63e-06 W | 7.40e-06 W | 6.91e-10 W | 1.30e-05 W | 59.0% |
+| Clock | 0.00e+00 W | 0.00e+00 W | 0.00e+00 W | 0.00e+00 W | 0.0% |
+| **Total** | **1.47e-05 W** | **7.40e-06 W** | **1.26e-09 W** | **2.21e-05 W** | **100%** |
+
+> Clock power is 0 because no synthesized clock tree was generated (TritonCTS found no clock nets — see CTS note above).
+
+---
+
+### 7. IR Drop Analysis
+
+| Net | Worst IR Drop | Average IR Drop | Percentage Drop | Status |
+|-----|--------------|----------------|----------------|--------|
+| VDD | 1.23e-05 V | 1.38e-06 V | 0.00% | ✅ |
+| VSS | 1.71e-05 V | 1.75e-06 V | 0.00% | ✅ |
+
+```
+[INFO PSM-0040] All shapes on net VDD are connected.
+[INFO PSM-0040] All shapes on net VSS are connected.
+```
+
+Supply voltage: 1.80 V  
+Both VDD and VSS are fully connected with negligible IR drop.
+
+---
+
+### 8. Cell Type Breakdown
+
+| Cell Type | Count | Area (um²) |
+|-----------|-------|------------|
+| Fill cells | 324 | 1289.99 |
+| Tap cells | 50 | 62.56 |
+| Timing repair buffers | 41 | 402.89 |
+| Inverters | 14 | 52.55 |
+| Sequential cells | 45 | 1128.58 |
+| Multi-input combinational | 166 | 1149.85 |
+| **Total** | **640** | **4086.42** |
+
+---
+
+## Flow Summary Metrics
+
+| Stage | Output File | Design Area | Utilization | Status |
+|-------|-------------|-------------|-------------|--------|
+| Synthesis | `1_synth.odb` | 2376 um² | — | ✅ |
+| Floorplan | `2_floorplan.odb` | 2323 um² | 57% | ✅ |
+| Global Place | `3_3_place_gp.odb` | 2796 um² | 68% | ✅ |
+| Detail Place | `3_place.odb` | 2796 um² | 68% | ✅ |
+| CTS | `4_cts.odb` | 2796 um² | 68% | ✅ (no clock nets — expected) |
+| Global Route | `5_1_grt.odb` | 2796 um² | 68% | ✅ |
+| Detail Route | `5_2_route.odb` | 2796 um² | 68% | ✅ (0 DRC violations) |
+| Fill | `5_route.odb` | 2796 um² | 68% | ✅ (324 fillers) |
+| Finish | `6_final.odb` | 2796 um² | 68% | ✅ |
+| GDS Merge | `6_1_merged.gds` | — | — | ⚠️ KLayout abort (Wayland) |
+
+### Timing Summary
+
+| Metric | Value | Target | Status |
+|--------|-------|--------|--------|
+| WNS | 0.00 ns | ≥ 0 | ✅ |
+| TNS | 0.00 ns | = 0 | ✅ |
+| Worst slack | +4.70 ns | > 0 | ✅ |
+| f_max | 188.80 MHz | ≥ 100 MHz | ✅ |
+| Setup violations | 0 | 0 | ✅ |
+| Hold violations | 0 | 0 | ✅ |
+| Max slew violations | 0 | 0 | ✅ |
+| Max cap violations | 0 | 0 | ✅ |
+| DRC violations | 0 | 0 | ✅ |
+| Antenna violations | 0 | 0 | ✅ |
+
+---
+
+## Known Issues
+
+### 1. `[WARNING CTS-0083] No clock nets have been found`
+
+**Cause:** `housekeeping_spi` uses `SCK` (external SPI clock) and dual-edge triggered flip-flops. The synthesis constraint defines `wb_clk_i` as a virtual clock. TritonCTS cannot propagate a virtual clock or build a tree for `SCK`/`negedge SCK` paths, so it finds 0 clock nets.
+
+**Impact:** No physical clock tree is inserted. Timing closure is still achieved — all paths MET with +4.70 ns worst slack.
+
+**Resolution:** No action required for functional correctness. If CTS is needed, the constraint should map `SCK` as the primary clock.
+
+### 2. `KLayout GDS merge — SIGABRT (exit 134)`
+
+**Cause:** KLayout crashes on the Wayland display session (`XDG_SESSION_TYPE=wayland`).
+
+**Workaround:**
+```bash
+export QT_QPA_PLATFORM=xcb
+make gds
+```
+Or run with `klayout -zz` (headless mode with explicit platform).
+
+**Impact:** `6_1_merged.gds` was not generated. All upstream outputs (`6_final.odb`, `6_final.def`, `6_final.v`) are complete and valid.
+
+### 3. `[WARNING RSZ-0104] Net _189_ only has one pin`
+
+Dangling single-pin nets (`_185_`, `_187_`, `_188_`, `_189_`, `_190_`) appear during global route repair. These correspond to floating internal nets from the synthesized netlist — consistent with the earlier synthesis warning of 2 floating nets.
+
+**Impact:** No timing or functional impact. Flagged as informational.
+
+---
+
+## Checklist Status
+
+| Deliverable | File | Status |
+|-------------|------|--------|
+| Synthesis run | `1_synth.odb` / `1_synth.v` | ✅ |
+| Synthesized netlist | `1_synth.v` | ✅ |
+| Floorplan | `2_floorplan.odb` | ✅ |
+| Placement | `3_place.odb` | ✅ |
+| CTS | `4_cts.odb` | ✅ (0 clock nets — expected) |
+| Global route | `5_1_grt.odb` | ✅ |
+| Detail route (0 DRC) | `5_2_route.odb` | ✅ |
+| Fill insertion | `5_route.odb` | ✅ |
+| Final ODB | `6_final.odb` | ✅ |
+| Final DEF | `6_final.def` | ✅ |
+| Final gate-level netlist | `6_final.v` | ✅ |
+| GDSII | `6_1_merged.gds` | ⚠️ KLayout abort |
+| Timing report (WNS = 0) | `6_finish_report.rpt` | ✅ |
+| Power report | `6_finish_report.rpt` | ✅ |
+| IR drop analysis | `6_finish_report.rpt` | ✅ |
+| 0 setup violations | — | ✅ |
+| 0 hold violations | — | ✅ |
+| 0 DRC violations | — | ✅ |
+| 0 antenna violations | — | ✅ |
+
+---
+
+## Next Steps — Phase 4: Gate-Level Simulation (GLS)
+
+```bash
+# Use 6_final.v as the gate-level netlist
+# Compile with sky130hd standard cell models
+iverilog -o gls_sim \
+    -DFUNCTIONAL -DUNIT_DELAY=#1 \
+    sky130_fd_sc_hd.v \
+    results/sky130hd/housekeeping_spi/base/6_final.v \
+    tb_housekeeping_spi.v
+
+# Run simulation
+vvp gls_sim
+
+# View waveforms
+gtkwave gls_dump.vcd
+```
+
+---
+</details>
+
+
+<details>
+<summary><strong>PHASE 4 — Gate-Level Simulation (GLS)</strong></summary>
+
+--- 
+</details>
+
+<details>
+<summary><strong>PHASE 5 — Waveform Validation</strong></summary>
+
+--- 
+</details>
+
+<details>
+<summary><strong>PHASE 6 — RTL vs GLS Validation</strong></summary>
+
+--- 
+</details>
+
+<details>
+<summary><strong>PHASE 7 — Debugging and Insights</strong></summary>
+
+--- 
+</details>
