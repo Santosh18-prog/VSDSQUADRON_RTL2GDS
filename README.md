@@ -7342,6 +7342,8 @@ assign pass_thru_user_reset = pass_thru_user_delay | pre_pass_thru_user;
 
 ## 5. Block Diagram
 
+ ![blk](WEEK-6/Phase1/blk.png)
+
 ```
                         housekeeping_spi
   ┌──────────────────────────────────────────────────────────┐
