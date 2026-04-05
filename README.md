@@ -8188,7 +8188,8 @@ gtkwave gls_dump.vcd
 
 <details>
 <summary><strong>PHASE 4 — Gate-Level Simulation (GLS)</strong></summary>
-# Week 6 — Phase 4 & Phase 5: Gate-Level Simulation and Waveform Validation
+
+---
 
 **Block:** `housekeeping_spi` — SPI Controller for Caravel SoC  
 **Netlist:** `6_final.v` (ORFS post-route + fill)  
